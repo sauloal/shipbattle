@@ -9,9 +9,7 @@
     
     <body data-ng-app="myModule" data-ng-cloak=true>
         <div data-ng-controller="SimpleController">
-            <input type="text" data-ng-model="user"/>
             <h1> Hi {{ user }} </h1>
-            <small> Url <a href="{{ url }}">{{ url }}</a></small><br/>
             <input type="checkbox" data-ng-model="adding"/>
             <select data-ng-model='ships' ng-options='s.name for s in shipsOpts'></select>
             <span data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'H' : 'V' }} </span>
@@ -22,7 +20,8 @@
                 </tr>
             </table>
             <label>{{ result }}</label>
-            User {{ auth.DisplayName }} <small><a data-ng-click="auth.logout()">Logout</a></small>
+            User {{ user.DisplayName }} <small><a data-ng-click="logout()">Logout</a></small>
+            <small> Url <a href="{{ url }}">{{ url }}</a></small><br/>
         </div>
     </body>
 
@@ -45,7 +44,7 @@
         
         
         //function SimpleController ($scope, angularFire) {
-        function SimpleController ($scope, angularFireAuth) {
+        function SimpleController ($scope, angularFire) {
             var FUboard = url + '/board';
             var FDboard = new Firebase( FUboard );
 
@@ -58,7 +57,7 @@
                     // user authenticated with Firebase
                     console.log(user);
                     console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
-
+                    
 
                     //accessToken - The Facebook access token (string).
                     //displayName - The user's display name (string).
@@ -68,8 +67,9 @@
                     //thirdPartyUserData - User account data returned by Facebook (object).
                     //uid - A unique id combining the provider and uid, intended as the unique key for user data (string).
 
+                    $scope.user = user;
 
-                    
+                        
                     angularFire( FDboard, $scope, 'board' ).then( function(){
                         console.log('FDboard %o', $scope.board );
                         $scope.ctrl.run();
@@ -82,12 +82,13 @@
                         $scope.ctrl.run();
                     });
         
-                    var FUuser = url + '/user';
-                    var FDuser = new Firebase( FUuser );
-                    angularFire( FDuser, $scope, 'user' ).then( function(){
-                        console.log('FDuser ' + $scope.user );
-                        $scope.ctrl.run();
-                    });
+                    //var FUuser = url + '/user';
+                    //var FDuser = new Firebase( FUuser );
+                    //angularFire( FDuser, $scope, 'user' ).then( function(){
+                        //console.log('FDuser ' + $scope.user );
+                        //$scope.user = user;
+                        //$scope.ctrl.run();
+                    //});
                     
 
                 } else {
@@ -99,25 +100,27 @@
 
 
 
-            function login( provider ) {
-                auth.login(provider, {
-                    rememberMe: true,
-                    scope: 'email'
-                });
-            }
             
             
-            
-            
-            
-            var control = function () {
+            var control = function ( ) {
                 return function( $scope ) {
                     //console.log(' starting');
                     this.scope = $scope;
                 };
             }();
 
+
+            control.prototype.login = function ( provider ) {
+                auth.login(provider, {
+                    rememberMe: true,
+                    scope: 'email'
+                });
+            };
             
+            
+            control.prototype.logout = function ( ) {
+                auth.logout();
+            };
             
             
             control.prototype.run = function() {
