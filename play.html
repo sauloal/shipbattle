@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="UTF-8">
+    <head>
+        <title>Page Title</title>
+    </head>
+
+    <link rel="stylesheet" type="text/css" href="ships.css">
+    
+    <body data-ng-app="myModule" data-ng-cloak=true>
+        <div data-ng-controller="SimpleController">
+            <input type="text" data-ng-model="user"/>
+            <h1> Hi {{ user }} </h1>
+            <small> Url <a href="{{ url }}">{{ url }}</a></small><br/>
+            <input type="checkbox" data-ng-model="adding"/>
+            <select data-ng-model='ships' ng-options='s.name for s in shipsOpts'></select>
+            <span data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'H' : 'V' }} </span>
+            
+            <table>
+                <tr data-ng-repeat="row in board">
+                    <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( {{ $parent.$index }}, {{ $index }}, col )"></td>
+                </tr>
+            </table>
+            <label>{{ result }}</label>
+            User {{ auth.DisplayName }} <small><a data-ng-click="auth.logout()">Logout</a></small>
+        </div>
+    </body>
+
+    <!--<script type='text/javascript' src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>-->
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.1.5/angular.min.js"></script>
+    <script type='text/javascript' src="https://cdn.firebase.com/v0/firebase.js"></script>
+    <!--<script type='text/javascript' src="https://cdn.firebsae.com/v0/firebase-auth-client.js"/>-->
+    <script type='text/javascript' src='https://cdn.firebase.com/v0/firebase-simple-login.js'></script>
+    <script type='text/javascript' src="https://cdn.firebase.com/libs/angularfire/0.3.0/angularfire.min.js"></script>
+
+    <!--<script type='text/javascript' src="http://code.angularjs.org/1.2.3/angular-resource.min.js"></script>-->
+    <script type='text/javascript' src="http://code.angularjs.org/1.2.3/angular-route.min.js"></script>
+
+
+    <script>
+        var demoApp = angular.module( "myModule", ['firebase'] );
+        var urlBase = 'fundo';
+        var urlDb   = 'board';
+        var url     = 'https://'+urlBase+'.firebaseio.com/'+urlDb;
+        
+        
+        //accessToken - The Facebook access token (string).
+        //displayName - The user's display name (string).
+        //firebaseAuthToken - The Firebase authentication token for this session (string).
+        //id - The user's Facebook id (string).
+        //provider - The authentication method used, in this case: 'facebook' (string).
+        //thirdPartyUserData - User account data returned by Facebook (object).
+        //uid - A unique id combining the provider and uid, intended as the unique key for user data (string).
+        
+        //function SimpleController ($scope, angularFire) {
+        function SimpleController ($scope, angularFireAuth) {
+            var FUboard = url;
+            var FDboard = new Firebase( FUboard );
+
+
+            var auth    = new FirebaseSimpleLogin(FDboard, function(error, user) {
+                if (error) {
+                    // an error occurred while attempting login
+                    console.log(error);
+                } else if (user) {
+                    // user authenticated with Firebase
+                    console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
+                } else {
+                    console.log('user logged out');
+                    // user is logged out
+                }
+            });
+            
+            function login( provider ) {
+                auth.login(provider, {
+                    rememberMe: true,
+                    scope: 'email'
+                });
+            }
+            
+            login('facebook');
+
+            
+            angularFire( FDboard, $scope, 'board' ).then( function(){
+                console.log('FDboard %o', $scope.board );
+                $scope.ctrl.run();
+            });
+
+            var FUsetup = 'https://fundo.firebaseio.com/setup';
+            var FDsetup = new Firebase( FUsetup );
+            angularFire( FDsetup, $scope, 'setup' ).then( function(){
+                console.log('FDsetup %o', $scope.setup );
+                $scope.ctrl.run();
+            });
+
+            var FUuser = 'https://fundo.firebaseio.com/user';
+            var FDuser = new Firebase( FUuser );
+            angularFire( FDuser, $scope, 'user' ).then( function(){
+                console.log('FDuser ' + $scope.user );
+                $scope.ctrl.run();
+            });
+            
+
+            
+            
+            
+            
+            var control = function () {
+                return function( $scope ) {
+                    //console.log(' starting');
+                    this.scope = $scope;
+                };
+            }();
+
+            
+            
+            
+            control.prototype.run = function() {
+                //console.log('user %s setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
+                this.scope.url = 'https://fundo.firebaseio.com/board';
+    
+                if ( this.scope.user && this.scope.setup && this.scope.board ) {
+                    this.scope.size = this.scope.setup.width * this.scope.setup.height;
+                    console.log('  READY. size: %d', this.scope.size);
+        
+                    $scope.getClasses = function ( col ) {
+                        if ( $scope.user == col.user ) {
+                            return 'state-'+col.status+' ship-'+col.shipPos+' ori-'+col.shipOrientation;
+                        } else {
+                            return 'state-0 ship-0 ori-true';
+                        }
+                    };
+        
+                    $scope.addShip = function ( x, y ) {
+                        var shipName  = $scope.ships.name;
+                        var shipSize  = $scope.ships.size;
+                        var shipIndex = $scope.ships.imgStart;
+                        var shipOri   = $scope.orientation;
+                        
+                        var pStart    = $scope.orientation ? y : x;
+                        var pEnd      = pStart + shipSize; // todo: check border
+                        
+                        //console.log( 'adding ship %s size %d orientation %s X %d Y %d S %d E %d', shipName, shipSize, shipOri, x, y, pStart, pEnd );
+                        
+                        
+                        if ( $scope.orientation ) {
+                            if ( pEnd > $scope.setup.width ) {
+                                console.log( ' too close to border pEnd %d > width %d', pEnd, $scope.setup.width );
+                                $scope.result = 'too close to border';
+                                return;
+                            }
+                        } else {
+                            if ( pEnd > $scope.setup.height ) {
+                                console.log( ' too close to border pEnd %d > height %d', pEnd, $scope.setup.height);
+                                $scope.result = 'too close to border';
+                                return;
+                            }
+                        }
+                        
+                        
+                        for ( var p = pStart; p < pEnd; p++ ) {
+                            if ( $scope.orientation ) { // horiz
+                                if ( $scope.board[ x ][ p ][ 'status' ] != 0 ) {
+                                    console.log( ' already used x %d y %d', x, p);
+                                    $scope.result = 'already taken';
+                                    return;
+                                }
+                                
+                            } else {
+                                if ( $scope.board[ p ][ y ][ 'status' ] != 0 ) {
+                                    console.log( ' already used x %d y %d', p, y);
+                                    $scope.result = 'already taken';
+                                    return;
+                                }
+                            }
+                        }
+
+                        
+                        var shipPos = 0;
+                        for ( var p = pStart; p < pEnd; p++ ) {
+                            //console.log( '  p %d', p);
+                            
+                            var nX     = p;
+                            var nY     = y;
+                            
+                            if ( $scope.orientation ) { // horiz
+                                nX     = x;
+                                nY     = p;
+                            }
+                            
+                            //console.log( '    X %d Y %s', nX, nY );
+                            
+                            $scope.board[ nX ][ nY ].status          = 1;
+                            $scope.board[ nX ][ nY ].user            = $scope.user;
+                            $scope.board[ nX ][ nY ].shipName        = shipName;
+                            $scope.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
+                            $scope.board[ nX ][ nY ].shipOrientation = $scope.orientation;
+                            $scope.board[ nX ][ nY ].shipZero        = [x, y];
+                            
+                            shipPos += 1;
+                        }
+                    };
+                    
+        
+                    $scope.updateCell = function ( x, y, col ) {
+                        //console.log('updating x %d y %d cell %o', x, y, col );
+                        //state-0 { /* sea */
+                        //state-1 { /* used */
+                        //state-2 { /* hit */
+                        //state-3 { /* sunk */
+                        //
+                        //
+                        //
+                        //td.ship-0{ /* transparent */
+                        //
+                        //td.ship-1{ /* boat */
+                        //
+                        //td.ship-2{ /* fragate */
+                        //td.ship-3{ /* fragate */
+                        //td.ship-4{ /* fragate */
+                        //td.ship-5{ /* fragate */
+                        //
+                        //td.ship-6{ /* submarine */
+                        //td.ship-7{ /* submarine */
+                        //td.ship-8{ /* submarine */
+                        //td.ship-9{ /* submarine */
+                        //
+                        //td.ship-10{ /* destroyer */
+                        //td.ship-11{ /* destroyer */
+                        //td.ship-12{ /* destroyer */
+                        //td.ship-13{ /* destroyer */
+                        //td.ship-14{ /* destroyer */
+                        //
+                        //td.ship-15{ /* carrier */
+                        //td.ship-16{ /* carrier */
+                        //td.ship-17{ /* carrier */
+                        //td.ship-18{ /* carrier */
+                        //td.ship-19{ /* carrier */
+                        //td.ship-20{ /* carrier */
+                        //td.ship-21{ /* carrier */
+
+                        
+                        var adding    = $scope.adding;
+                        //console.log( 'scope %o', $scope );
+                        console.log( 'colStatus %o adding %s', col['status'], adding );
+                        
+                        
+                        if ( col['status'] == 0 ) { // sea
+                            if ( adding ) {
+                                $scope.result = 'adding';
+                                $scope.addShip(x, y);
+                            
+                            } else {
+                                $scope.result = 'water';
+                            }
+                            
+                        } else
+                        if ( col['status'] == 1 ) { // used
+                            var zero             = col.shipZero;
+                            var shipName         = col.shipName;
+                            var shipUser         = col.user;
+                            
+                            var zX               = zero[0];
+                            var zY               = zero[1];
+                            var shipZ            = $scope.board[ zX ][ zY ];
+                            var shipSize         = $scope.shipsSizes[ shipName ];
+
+                            col.status           = 2; //hit
+                            col.shipPos          = 0; //transparent
+                            shipZ.shipHits      += 1;
+                            
+                            console.log( 'hit ship %s size %d hits %d', shipName, shipSize, shipZ.shipHits);
+                            
+                            if ( shipZ.shipHits == shipSize ) {
+                                $scope.result = 'you\'ve blown a '+shipName+' from '+shipUser+'!!';
+                                console.log( 'you\'ve blown a '+shipName+' from '+shipUser+'!!' );
+
+                                var shipOri   = shipZ.shipOrientation;
+                                var pStart    = shipOri ? zY : zX;
+                                var pEnd      = pStart  + shipSize - 1; // todo: check border
+                                
+                                for ( var p = pEnd; p >= pStart; p-- ) {
+                                    console.log( '  p %d', p);
+                                    
+                                    var nX     = p;
+                                    var nY     = zY;
+                                    
+                                    if ( shipOri ) { // horiz
+                                        nX     = zX;
+                                        nY     = p;
+                                    }
+                                    
+                                    console.log( '    X %d Y %s', nX, nY );
+                                    
+                                    $scope.board[ nX ][ nY ].status           = 0;
+                                    $scope.board[ nX ][ nY ].user             = '';
+                                    $scope.board[ nX ][ nY ].shipHits         = 0;
+                                    $scope.board[ nX ][ nY ].shipName         = '';
+                                    $scope.board[ nX ][ nY ].shipPos          = 0;
+                                    $scope.board[ nX ][ nY ].shipOrientation  = true;
+                                    $scope.board[ nX ][ nY ].shipZero         = [-1, -1];
+                                }
+                            } else {
+                                $scope.result = 'hit!';
+                            }
+                        }
+                    };
+                }
+            };
+
+            $scope.ctrl       = new control( $scope );
+    
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            $scope.shipsOpts  = [
+                { name: 'boat'     , size: 1, imgStart:  1 },
+                { name: 'fragate'  , size: 4, imgStart:  2 },
+                { name: 'submarine', size: 4, imgStart:  6 },
+                { name: 'destroyer', size: 5, imgStart: 10 },
+                { name: 'carrier'  , size: 7, imgStart: 15 }
+            ];
+            
+            $scope.shipsSizes  = {};
+            for ( var s = 0; s < $scope.shipsOpts.length; s++ ) {
+                $scope.shipsSizes[ $scope.shipsOpts[s].name ] = $scope.shipsOpts[s].size;
+            }
+            
+            $scope.ships       = $scope.shipsOpts[0];
+            
+            $scope.orientation = true;
+        };
+
+        demoApp.controller('SimpleController', SimpleController);
+    </script>
+</html>

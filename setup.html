@@ -1,0 +1,63 @@
+<html>
+    <body></body>
+    <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+    <script>
+        //https://fundo.firebaseio.com/#
+        var dataRef = new Firebase("https://fundo.firebaseio.com");
+        dataRef.set(null);
+        
+        var width  = 10;
+        var height = 10;
+        var board  = [];
+        
+        var setup = dataRef.child('setup');
+        setup.set( { width: width, height: height } );
+
+        var usr   = dataRef.child('user' );
+        usr.set( 'saulo' );
+        
+
+        var sendData = function ( coord, vars ) {
+            for ( var v = 0; v < vars.length; v++ ) {
+                var vcoord = coord + '/' + vars[v][0];
+                console.log( '  %s', vcoord );
+                dataRef.child( vcoord ).set( vars[v][1] );
+            }
+        };
+
+        
+        for ( var x = 0; x < 10; x++ ) {
+            for ( var y = 0; y < 10; y++ ) {
+                var coord = 'board/' + x + '/' + y;
+                // state, ship pos, ship id, user
+                var vars = [
+                            [ 'status'         ,          0],
+                            [ 'user'           ,         -1],
+                            [ 'shipHits'       ,          0],
+                            [ 'shipName'       ,         ''],
+                            [ 'shipPos'        ,          0],
+                            [ 'shipOrientation',       true],
+                            [ 'shipZero'       ,   [-1, -1]],
+                        ];
+                
+                sendData(coord, vars);
+            }
+        }
+
+        console.log( 'finished' );
+        
+        //state-0 { /* sea */
+        //state-1 { /* used */
+        //state-2 { /* hit */
+        //state-3 { /* sunk */
+        //
+        //ship-0{ /* transparent */
+        //ship-1{ /* triangle top */
+        //ship-2{ /* triangle right */
+        //ship-3{ /* triangle bottom */
+        //ship-4{ /* triangle left */
+        //ship-5{ /* middle horizontal */
+        //ship-6{ /* middle vertical */
+        
+    </script>
+</html>
