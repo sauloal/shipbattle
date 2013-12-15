@@ -40,21 +40,13 @@
     <script>
         var demoApp = angular.module( "myModule", ['firebase'] );
         var urlBase = 'fundo';
-        var urlDb   = 'board';
-        var url     = 'https://'+urlBase+'.firebaseio.com/'+urlDb;
+        var url     = 'https://'+urlBase+'.firebaseio.com';
         
         
-        //accessToken - The Facebook access token (string).
-        //displayName - The user's display name (string).
-        //firebaseAuthToken - The Firebase authentication token for this session (string).
-        //id - The user's Facebook id (string).
-        //provider - The authentication method used, in this case: 'facebook' (string).
-        //thirdPartyUserData - User account data returned by Facebook (object).
-        //uid - A unique id combining the provider and uid, intended as the unique key for user data (string).
         
         //function SimpleController ($scope, angularFire) {
         function SimpleController ($scope, angularFireAuth) {
-            var FUboard = url;
+            var FUboard = url + '/board';
             var FDboard = new Firebase( FUboard );
 
 
@@ -64,13 +56,49 @@
                     console.log(error);
                 } else if (user) {
                     // user authenticated with Firebase
+                    console.log(user);
                     console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
+
+
+                    //accessToken - The Facebook access token (string).
+                    //displayName - The user's display name (string).
+                    //firebaseAuthToken - The Firebase authentication token for this session (string).
+                    //id - The user's Facebook id (string).
+                    //provider - The authentication method used, in this case: 'facebook' (string).
+                    //thirdPartyUserData - User account data returned by Facebook (object).
+                    //uid - A unique id combining the provider and uid, intended as the unique key for user data (string).
+
+
+                    
+                    angularFire( FDboard, $scope, 'board' ).then( function(){
+                        console.log('FDboard %o', $scope.board );
+                        $scope.ctrl.run();
+                    });
+        
+                    var FUsetup = url + '/setup';
+                    var FDsetup = new Firebase( FUsetup );
+                    angularFire( FDsetup, $scope, 'setup' ).then( function(){
+                        console.log('FDsetup %o', $scope.setup );
+                        $scope.ctrl.run();
+                    });
+        
+                    var FUuser = url + '/user';
+                    var FDuser = new Firebase( FUuser );
+                    angularFire( FDuser, $scope, 'user' ).then( function(){
+                        console.log('FDuser ' + $scope.user );
+                        $scope.ctrl.run();
+                    });
+                    
+
                 } else {
                     console.log('user logged out');
                     // user is logged out
                 }
             });
             
+
+
+
             function login( provider ) {
                 auth.login(provider, {
                     rememberMe: true,
@@ -78,29 +106,6 @@
                 });
             }
             
-            login('facebook');
-
-            
-            angularFire( FDboard, $scope, 'board' ).then( function(){
-                console.log('FDboard %o', $scope.board );
-                $scope.ctrl.run();
-            });
-
-            var FUsetup = 'https://fundo.firebaseio.com/setup';
-            var FDsetup = new Firebase( FUsetup );
-            angularFire( FDsetup, $scope, 'setup' ).then( function(){
-                console.log('FDsetup %o', $scope.setup );
-                $scope.ctrl.run();
-            });
-
-            var FUuser = 'https://fundo.firebaseio.com/user';
-            var FDuser = new Firebase( FUuser );
-            angularFire( FDuser, $scope, 'user' ).then( function(){
-                console.log('FDuser ' + $scope.user );
-                $scope.ctrl.run();
-            });
-            
-
             
             
             
@@ -117,7 +122,7 @@
             
             control.prototype.run = function() {
                 //console.log('user %s setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
-                this.scope.url = 'https://fundo.firebaseio.com/board';
+                this.scope.url = url + '/board';
     
                 if ( this.scope.user && this.scope.setup && this.scope.board ) {
                     this.scope.size = this.scope.setup.width * this.scope.setup.height;
@@ -313,16 +318,6 @@
             
             
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
             $scope.shipsOpts  = [
                 { name: 'boat'     , size: 1, imgStart:  1 },
                 { name: 'fragate'  , size: 4, imgStart:  2 },
@@ -339,6 +334,8 @@
             $scope.ships       = $scope.shipsOpts[0];
             
             $scope.orientation = true;
+
+            login('facebook');
         };
 
         demoApp.controller('SimpleController', SimpleController);
