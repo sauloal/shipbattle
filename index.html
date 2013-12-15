@@ -26,7 +26,7 @@
 
 
     <script>
-        var versionString = 'v2013_12_16_00_46';
+        var versionString = 'v2013_12_16_00_49';
         var urlBase       = 'fundo';
         var url           = 'https://'+urlBase+'.firebaseio.com';
         var FUbase        = url;
@@ -134,7 +134,7 @@
             control.prototype.run = function() {
                 this.scope.url = url;
     
-                if ( this.scope.user && this.scope.setup && this.scope.board ) {
+                if ( this.scope.user && this.scope.setupD && this.scope.boardD ) {
                     console.log('user %o setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
                     console.log('  READY' );
         
@@ -145,13 +145,15 @@
 
             $scope.ctrl       = new control( $scope );
 
-            angularFire( FDboard, $scope, 'board' ).then( function(){
-                console.log('FDboard %o', $scope.board );
+            angularFire( FDboard, $scope, 'boardD' ).then( function(){
+                console.log('FDboard %o', $scope.boardD );
+                $scope.board = $scope.boardD;
                 $scope.ctrl.run();
             });
 
-            angularFire( FDsetup, $scope, 'setup' ).then( function(){
-                console.log('FDsetup %o', $scope.setup );
+            angularFire( FDsetup, $scope, 'setupD' ).then( function(){
+                console.log('FDsetup %o', $scope.setupD );
+                $scope.setup = $scope.setupD;
                 $scope.ctrl.run();
             });
 
