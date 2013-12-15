@@ -40,6 +40,7 @@
                 console.log('auth error');
                 console.log(error);
                 this.user = null;
+                location.hash = '#/init';
                 
             } else if (user) {
                 // user authenticated with Firebase
@@ -48,6 +49,7 @@
                 console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
                 this.user = user;
                 
+                location.hash = '#/game';
                 //accessToken - The Facebook access token (string).
                 //displayName - The user's display name (string).
                 //firebaseAuthToken - The Firebase authentication token for this session (string).
@@ -60,6 +62,7 @@
                 console.log('auth user logged out');
                 // user is logged out
                 this.user = null;
+                location.hash = '#/init';
             }
         });
 
@@ -71,7 +74,6 @@
                 rememberMe: true,
                 scope: 'email'
             });
-            location.hash = '#/game';
         };
         
         
@@ -94,6 +96,7 @@
                 location.hash = '#/game';
             }
         }
+        
         
 
         function gameController ( $scope, angularFire ) {
