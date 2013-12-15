@@ -112,6 +112,7 @@
 
 
             control.prototype.login = function ( provider ) {
+                console.log( 'loggin in' );
                 auth.login(provider, {
                     rememberMe: true,
                     scope: 'email'
@@ -125,7 +126,7 @@
             
             
             control.prototype.run = function() {
-                //console.log('user %s setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
+                console.log('user %o setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
                 this.scope.url = url + '/board';
     
                 if ( this.scope.user && this.scope.setup && this.scope.board ) {
