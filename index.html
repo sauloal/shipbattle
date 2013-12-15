@@ -167,9 +167,11 @@
 
         
 
-        function gameController ( $scope, angularFire ) {
+        function gameController ( $scope, angularFire, setup, board ) {
             $scope.versionString = versionString;
             $scope.auth          = auth;
+            $scope.setup         = setup;
+            $scope.board         = board;
 
             console.log( 'game auth AUTH %o USER %o', $scope.auth, userData );
             console.log( 'game setup %o board %o', $scope.setup, $scope.board );
