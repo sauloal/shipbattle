@@ -356,6 +356,8 @@
             $scope.auth          = auth;
 
             console.log( 'game auth AUTH %o USER %o', $scope.auth, userData );
+            console.log( 'game setup %o board %o', $scope.setup, $scope.board );
+            
 
             if ( !userData ) {
                 location.hash = '#/init';
@@ -363,8 +365,6 @@
             }
             
             $scope.user    = userData;
-            
-            
             
             $scope.shipsOpts  = [
                 { name: 'boat'     , size: 1, imgStart:  1 },
