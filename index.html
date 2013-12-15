@@ -26,12 +26,13 @@
 
 
     <script>
-        var urlBase = 'fundo';
-        var url     = 'https://'+urlBase+'.firebaseio.com';
-        var FUbase  = url;
-        var FDbase  = new Firebase( FUbase );
+        var urlBase       = 'fundo';
+        var url           = 'https://'+urlBase+'.firebaseio.com';
+        var FUbase        = url;
+        var FDbase        = new Firebase( FUbase );
+        var versionString = 'v2013_12_15_23_28';
 
-
+        
         var auth    = new FirebaseSimpleLogin(FDbase, function(error, user) {
             console.log('auth');
 
@@ -87,8 +88,9 @@
         
         
         function initController ( $scope, angularFire ) {
-            $scope.url  = url;
-            $scope.auth = auth;
+            $scope.url           = url;
+            $scope.auth          = auth;
+            $scope.versionString = versionString;
 
             console.log( 'init auth AUTH %o USER %o', $scope.auth, $scope.auth.user );
 
@@ -100,10 +102,10 @@
         
 
         function gameController ( $scope, angularFire ) {
-            var FUboard = url + '/board';
-            var FDboard = new Firebase( FUboard );
-
-            $scope.auth = auth;
+            var FUboard          = url + '/board';
+            var FDboard          = new Firebase( FUboard );
+            $scope.versionString = versionString;
+            $scope.auth          = auth;
 
             console.log( 'game auth AUTH %o USER %o', $scope.auth, $scope.auth.user );
 
