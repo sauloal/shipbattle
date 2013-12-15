@@ -26,12 +26,13 @@
 
 
     <script>
-        var versionString = 'v2013_12_15_23_28';
+        var versionString = 'v2013_12_15_23_49';
         var urlBase       = 'fundo';
         var url           = 'https://'+urlBase+'.firebaseio.com';
         var FUbase        = url;
         var FDbase        = new Firebase( FUbase );
-
+        var userData      = null;
+        
         
         var auth    = new FirebaseSimpleLogin(FDbase, function(error, user) {
             console.log('auth');
@@ -40,7 +41,7 @@
                 // an error occurred while attempting login
                 console.log('auth error');
                 console.log(error);
-                this.user = null;
+                userData      = null;
                 location.hash = '#/init';
                 
             } else if (user) {
@@ -48,9 +49,10 @@
                 console.log('auth user');
                 console.log(user);
                 console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
-                this.user = user;
                 
+                userData      = user;
                 location.hash = '#/game';
+                
                 //accessToken - The Facebook access token (string).
                 //displayName - The user's display name (string).
                 //firebaseAuthToken - The Firebase authentication token for this session (string).
@@ -62,7 +64,7 @@
             } else {
                 console.log('auth user logged out');
                 // user is logged out
-                this.user = null;
+                userData      = null;
                 location.hash = '#/init';
             }
         });
@@ -81,7 +83,7 @@
         function logout ( ) {
             console.log( 'loggin out' );
             auth.logout();
-            $scope.user = null;
+            userData      = null;
             location.hash = '#/init';
         };
 
@@ -92,9 +94,9 @@
             $scope.auth          = auth;
             $scope.versionString = versionString;
 
-            console.log( 'init auth AUTH %o USER %o', $scope.auth, $scope.auth.user );
+            console.log( 'init auth AUTH %o USER %o', $scope.auth, userData );
 
-            if ($scope.auth.user) {
+            if (userData) {
                 location.hash = '#/game';
             }
         }
@@ -107,12 +109,14 @@
             $scope.versionString = versionString;
             $scope.auth          = auth;
 
-            console.log( 'game auth AUTH %o USER %o', $scope.auth, $scope.auth.user );
+            console.log( 'game auth AUTH %o USER %o', $scope.auth, userData );
 
-            if ( !$scope.auth.user ) {
+            if ( !userData ) {
                 location.hash = '#/init';
                 return;
             }
+            
+            $scope.user    = userData;
             
             control.prototype.run = function() {
                 this.scope.url = url;
@@ -123,7 +127,7 @@
                     console.log('  READY. size: %d', this.scope.size);
         
                     $scope.getClasses = function ( col ) {
-                        if ( $scope.user == col.user ) {
+                        if ( $scope.user.uid == col.user ) {
                             return 'state-'+col.status+' ship-'+col.shipPos+' ori-'+col.shipOrientation;
                         } else {
                             return 'state-0 ship-0 ori-true';
@@ -191,7 +195,7 @@
                             //console.log( '    X %d Y %s', nX, nY );
                             
                             $scope.board[ nX ][ nY ].status          = 1;
-                            $scope.board[ nX ][ nY ].user            = $scope.user;
+                            $scope.board[ nX ][ nY ].user            = $scope.user.uid;
                             $scope.board[ nX ][ nY ].shipName        = shipName;
                             $scope.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
                             $scope.board[ nX ][ nY ].shipOrientation = $scope.orientation;
