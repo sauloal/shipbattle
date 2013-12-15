@@ -26,11 +26,11 @@
 
 
     <script>
+        var versionString = 'v2013_12_15_23_28';
         var urlBase       = 'fundo';
         var url           = 'https://'+urlBase+'.firebaseio.com';
         var FUbase        = url;
         var FDbase        = new Firebase( FUbase );
-        var versionString = 'v2013_12_15_23_28';
 
         
         var auth    = new FirebaseSimpleLogin(FDbase, function(error, user) {
