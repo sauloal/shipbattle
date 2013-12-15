@@ -102,7 +102,7 @@
         }
         
         
-        function loadController ( $scope, angularFire ) {
+        function loadController ( $scope, angularFire, setup, board  ) {
             $scope.url           = url;
             $scope.auth          = auth;
             $scope.versionString = versionString;
@@ -136,8 +136,7 @@
     
                 if ( this.scope.user && this.scope.setup && this.scope.board ) {
                     console.log('user %o setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
-                    this.scope.size = this.scope.setup.width * this.scope.setup.height;
-                    console.log('  READY. size: %d', this.scope.size);
+                    console.log('  READY' );
         
                     location.hash = '#/game';
                 }
@@ -168,14 +167,15 @@
         
 
         function gameController ( $scope, angularFire, setup, board ) {
-            $scope.versionString = versionString;
+            $scope.url           = url;
             $scope.auth          = auth;
-            $scope.setup         = setup;
-            $scope.board         = board;
+            $scope.versionString = versionString;
+            $scope.user          = userData;
 
             console.log( 'game auth AUTH %o USER %o', $scope.auth, userData );
             console.log( 'game setup %o board %o', $scope.setup, $scope.board );
-            
+            $scope.size = $scope.setup.width * $scope.setup.height;
+
 
             if ( !userData ) {
                 location.hash = '#/init';
