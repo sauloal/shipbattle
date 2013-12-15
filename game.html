@@ -1,0 +1,14 @@
+            <h1> Hi {{ user.DisplayName }} </h1>
+            <input type="checkbox" data-ng-model="adding"/>
+            <select data-ng-model='ships' ng-options='s.name for s in shipsOpts'></select>
+            <span data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'H' : 'V' }} </span>
+            
+            <table>
+                <tr data-ng-repeat="row in board">
+                    <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( {{ $parent.$index }}, {{ $index }}, col )"></td>
+                </tr>
+            </table>
+            
+            <label>{{ result }}</label>
+            User {{ user.DisplayName }} <small><a data-ng-click="logout()">Logout</a></small>
+            <small> Url <a href="{{ url }}">{{ url }}</a> v2013_12_15_20_43</small><br/>

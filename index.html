@@ -8,24 +8,12 @@
     <link rel="stylesheet" type="text/css" href="ships.css">
     
     <body data-ng-app="myModule" data-ng-cloak=true>
-        <div data-ng-controller="SimpleController">
-            <h1> Hi {{ user.DisplayName }} </h1>
-            <input type="checkbox" data-ng-model="adding"/>
-            <select data-ng-model='ships' ng-options='s.name for s in shipsOpts'></select>
-            <span data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'H' : 'V' }} </span>
-            
-            <table>
-                <tr data-ng-repeat="row in board">
-                    <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( {{ $parent.$index }}, {{ $index }}, col )"></td>
-                </tr>
-            </table>
-            
-            <label>{{ result }}</label>
-            User {{ user.DisplayName }} <small><a data-ng-click="logout()">Logout</a></small>
-            <small> Url <a href="{{ url }}">{{ url }}</a></small><br/>
-        </div>
+        <div data-ng-view=""></div>
     </body>
 
+    
+    
+    
     <!--<script type='text/javascript' src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>-->
     <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.1.5/angular.min.js"></script>
     <script type='text/javascript' src="https://cdn.firebase.com/v0/firebase.js"></script>
@@ -38,98 +26,92 @@
 
 
     <script>
-        var demoApp = angular.module( "myModule", ['firebase'] );
         var urlBase = 'fundo';
         var url     = 'https://'+urlBase+'.firebaseio.com';
+        var FUbase  = url;
+        var FDbase  = new Firebase( FUbase );
+
+
+        var auth    = new FirebaseSimpleLogin(FDbase, function(error, user) {
+            console.log('init auth');
+
+            if (error) {
+                // an error occurred while attempting login
+                console.log(error);
+                this.user = null;
+                
+            } else if (user) {
+                // user authenticated with Firebase
+                console.log(user);
+                console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
+                this.user = user;
+                
+                //accessToken - The Facebook access token (string).
+                //displayName - The user's display name (string).
+                //firebaseAuthToken - The Firebase authentication token for this session (string).
+                //id - The user's Facebook id (string).
+                //provider - The authentication method used, in this case: 'facebook' (string).
+                //thirdPartyUserData - User account data returned by Facebook (object).
+                //uid - A unique id combining the provider and uid, intended as the unique key for user data (string).
+
+            } else {
+                console.log('user logged out');
+                // user is logged out
+                this.user = null;
+            }
+        });
+
+
+        
+        function login  ( provider ) {
+            console.log( 'loggin in' );
+            //auth.login(provider, {
+            //    rememberMe: true,
+            //    scope: 'email'
+            //});
+            location.hash = '#/game';
+        };
         
         
+        function logout ( ) {
+            console.log( 'loggin out' );
+            auth.logout();
+            $scope.user = null;
+            location.hash = '#/init';
+        };
+
         
-        //function SimpleController ($scope, angularFire) {
-        function SimpleController ($scope, angularFire) {
+        
+        function initController ( $scope, angularFire ) {
+            $scope.url  = url;
+            $scope.auth = auth;
+
+            console.log( 'init auth %o %o', $scope.auth, $scope.auth.user );
+
+            if ($scope.auth.user) {
+                location.hash = '#/game';
+            }
+        }
+        
+
+        function gameController ( $scope, angularFire ) {
             var FUboard = url + '/board';
             var FDboard = new Firebase( FUboard );
 
+            $scope.auth = auth;
 
-            var auth    = new FirebaseSimpleLogin(FDboard, function(error, user) {
-                if (error) {
-                    // an error occurred while attempting login
-                    console.log(error);
-                } else if (user) {
-                    // user authenticated with Firebase
-                    console.log(user);
-                    console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
-                    
+            console.log( 'game auth %o %o', $scope.auth, $scope.auth.user );
 
-                    //accessToken - The Facebook access token (string).
-                    //displayName - The user's display name (string).
-                    //firebaseAuthToken - The Firebase authentication token for this session (string).
-                    //id - The user's Facebook id (string).
-                    //provider - The authentication method used, in this case: 'facebook' (string).
-                    //thirdPartyUserData - User account data returned by Facebook (object).
-                    //uid - A unique id combining the provider and uid, intended as the unique key for user data (string).
-
-                    $scope.user = user;
-
-                        
-                    angularFire( FDboard, $scope, 'board' ).then( function(){
-                        console.log('FDboard %o', $scope.board );
-                        $scope.ctrl.run();
-                    });
-        
-                    var FUsetup = url + '/setup';
-                    var FDsetup = new Firebase( FUsetup );
-                    angularFire( FDsetup, $scope, 'setup' ).then( function(){
-                        console.log('FDsetup %o', $scope.setup );
-                        $scope.ctrl.run();
-                    });
-        
-                    //var FUuser = url + '/user';
-                    //var FDuser = new Firebase( FUuser );
-                    //angularFire( FDuser, $scope, 'user' ).then( function(){
-                        //console.log('FDuser ' + $scope.user );
-                        //$scope.user = user;
-                        //$scope.ctrl.run();
-                    //});
-                    
-
-                } else {
-                    console.log('user logged out');
-                    // user is logged out
-                }
-            });
-            
-
-
-
-            
-            
-            var control = function ( ) {
-                return function( $scope ) {
-                    //console.log(' starting');
-                    this.scope = $scope;
-                };
-            }();
-
-
-            control.prototype.login = function ( provider ) {
-                console.log( 'loggin in' );
-                auth.login(provider, {
-                    rememberMe: true,
-                    scope: 'email'
-                });
-            };
-            
-            
-            control.prototype.logout = function ( ) {
-                auth.logout();
-            };
-            
+            if ( !$scope.auth.user ) {
+                location.hash = '#/init';
+                return;
+            }
             
             control.prototype.run = function() {
-                console.log('user %o setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
-                this.scope.url = url + '/board';
+                this.scope.url = url;
     
                 if ( this.scope.user && this.scope.setup && this.scope.board ) {
+                    console.log('user %o setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
                     this.scope.size = this.scope.setup.width * this.scope.setup.height;
                     console.log('  READY. size: %d', this.scope.size);
         
@@ -140,8 +122,9 @@
                             return 'state-0 ship-0 ori-true';
                         }
                     };
+                    
         
-                    $scope.addShip = function ( x, y ) {
+                    $scope.addShip    = function ( x, y      ) {
                         var shipName  = $scope.ships.name;
                         var shipSize  = $scope.ships.size;
                         var shipIndex = $scope.ships.imgStart;
@@ -341,9 +324,55 @@
             
             $scope.orientation = true;
 
-            $scope.ctrl.login('facebook');
+
+            angularFire( FDboard, $scope, 'board' ).then( function(){
+                console.log('FDboard %o', $scope.board );
+                $scope.ctrl.run();
+            });
+
+            var FUsetup = url + '/setup';
+            var FDsetup = new Firebase( FUsetup );
+            angularFire( FDsetup, $scope, 'setup' ).then( function(){
+                console.log('FDsetup %o', $scope.setup );
+                $scope.ctrl.run();
+            });
+
+            //var FUuser = url + '/user';
+            //var FDuser = new Firebase( FUuser );
+            //angularFire( FDuser, $scope, 'user' ).then( function(){
+                //console.log('FDuser ' + $scope.user );
+                //$scope.user = user;
+                //$scope.ctrl.run();
+            //});
+
+
         };
 
-        demoApp.controller('SimpleController', SimpleController);
+
+
+        var demoApp = angular.module( "myModule", ['firebase'] ); //, 'ngRoute'
+        
+        demoApp.config(
+                        function ($routeProvider) {
+                            $routeProvider
+                                .when('/init', {
+                                    templateUrl: 'init.html',
+                                    controller: 'initController'
+                                })
+                                .when('/game', {
+                                    templateUrl: 'game.html',
+                                    controller: 'gameController'
+                                })
+                                .otherwise({
+                                    redirectTo: '/init'
+                                })
+                        }
+        );
+
+        var controllers = {};
+            controllers.initController = initController;
+            controllers.gameController = gameController;
+        
+        demoApp.controller( controllers );
     </script>
 </html>
