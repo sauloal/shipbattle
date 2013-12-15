@@ -9,7 +9,7 @@
     
     <body data-ng-app="myModule" data-ng-cloak=true>
         <div data-ng-controller="SimpleController">
-            <h1> Hi {{ user }} </h1>
+            <h1> Hi {{ user.DisplayName }} </h1>
             <input type="checkbox" data-ng-model="adding"/>
             <select data-ng-model='ships' ng-options='s.name for s in shipsOpts'></select>
             <span data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'H' : 'V' }} </span>
@@ -19,6 +19,7 @@
                     <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( {{ $parent.$index }}, {{ $index }}, col )"></td>
                 </tr>
             </table>
+            
             <label>{{ result }}</label>
             User {{ user.DisplayName }} <small><a data-ng-click="logout()">Logout</a></small>
             <small> Url <a href="{{ url }}">{{ url }}</a></small><br/>
@@ -316,9 +317,8 @@
                 }
             };
 
-            $scope.ctrl       = new control( $scope );
-    
             
+            $scope.ctrl       = new control( $scope );
             
             
             $scope.shipsOpts  = [
@@ -329,16 +329,18 @@
                 { name: 'carrier'  , size: 7, imgStart: 15 }
             ];
             
+            
             $scope.shipsSizes  = {};
             for ( var s = 0; s < $scope.shipsOpts.length; s++ ) {
                 $scope.shipsSizes[ $scope.shipsOpts[s].name ] = $scope.shipsOpts[s].size;
             }
             
+            
             $scope.ships       = $scope.shipsOpts[0];
             
             $scope.orientation = true;
 
-            login('facebook');
+            $scope.ctrl.login('facebook');
         };
 
         demoApp.controller('SimpleController', SimpleController);
