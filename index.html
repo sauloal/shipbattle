@@ -26,7 +26,7 @@
 
 
     <script>
-        var versionString = 'v2013_12_16_00_14';
+        var versionString = 'v2013_12_16_00_37';
         var urlBase       = 'fundo';
         var url           = 'https://'+urlBase+'.firebaseio.com';
         var FUbase        = url;
@@ -139,190 +139,6 @@
                     this.scope.size = this.scope.setup.width * this.scope.setup.height;
                     console.log('  READY. size: %d', this.scope.size);
         
-                    $scope.getClasses = function ( col       ) {
-                        if ( $scope.user.uid == col.user ) {
-                            return 'state-'+col.status+' ship-'+col.shipPos+' ori-'+col.shipOrientation;
-                        } else {
-                            return 'state-0 ship-0 ori-true';
-                        }
-                    };
-                    
-        
-                    $scope.addShip    = function ( x, y      ) {
-                        var shipName  = $scope.ships.name;
-                        var shipSize  = $scope.ships.size;
-                        var shipIndex = $scope.ships.imgStart;
-                        var shipOri   = $scope.orientation;
-                        
-                        var pStart    = $scope.orientation ? y : x;
-                        var pEnd      = pStart + shipSize; // todo: check border
-                        
-                        //console.log( 'adding ship %s size %d orientation %s X %d Y %d S %d E %d', shipName, shipSize, shipOri, x, y, pStart, pEnd );
-                        
-                        
-                        if ( $scope.orientation ) {
-                            if ( pEnd > $scope.setup.width ) {
-                                console.log( ' too close to border pEnd %d > width %d', pEnd, $scope.setup.width );
-                                $scope.result = 'too close to border';
-                                return;
-                            }
-                        } else {
-                            if ( pEnd > $scope.setup.height ) {
-                                console.log( ' too close to border pEnd %d > height %d', pEnd, $scope.setup.height);
-                                $scope.result = 'too close to border';
-                                return;
-                            }
-                        }
-                        
-                        
-                        for ( var p = pStart; p < pEnd; p++ ) {
-                            if ( $scope.orientation ) { // horiz
-                                if ( $scope.board[ x ][ p ][ 'status' ] != 0 ) {
-                                    console.log( ' already used x %d y %d', x, p);
-                                    $scope.result = 'already taken';
-                                    return;
-                                }
-                                
-                            } else {
-                                if ( $scope.board[ p ][ y ][ 'status' ] != 0 ) {
-                                    console.log( ' already used x %d y %d', p, y);
-                                    $scope.result = 'already taken';
-                                    return;
-                                }
-                            }
-                        }
-
-                        
-                        var shipPos = 0;
-                        for ( var p = pStart; p < pEnd; p++ ) {
-                            //console.log( '  p %d', p);
-                            
-                            var nX     = p;
-                            var nY     = y;
-                            
-                            if ( $scope.orientation ) { // horiz
-                                nX     = x;
-                                nY     = p;
-                            }
-                            
-                            //console.log( '    X %d Y %s', nX, nY );
-                            
-                            $scope.board[ nX ][ nY ].status          = 1;
-                            $scope.board[ nX ][ nY ].user            = $scope.user.uid;
-                            $scope.board[ nX ][ nY ].shipName        = shipName;
-                            $scope.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
-                            $scope.board[ nX ][ nY ].shipOrientation = $scope.orientation;
-                            $scope.board[ nX ][ nY ].shipZero        = [x, y];
-                            
-                            shipPos += 1;
-                        }
-                    };
-                    
-        
-                    $scope.updateCell = function ( x, y, col ) {
-                        //console.log('updating x %d y %d cell %o', x, y, col );
-                        //state-0 { /* sea */
-                        //state-1 { /* used */
-                        //state-2 { /* hit */
-                        //state-3 { /* sunk */
-                        //
-                        //
-                        //
-                        //td.ship-0{ /* transparent */
-                        //
-                        //td.ship-1{ /* boat */
-                        //
-                        //td.ship-2{ /* fragate */
-                        //td.ship-3{ /* fragate */
-                        //td.ship-4{ /* fragate */
-                        //td.ship-5{ /* fragate */
-                        //
-                        //td.ship-6{ /* submarine */
-                        //td.ship-7{ /* submarine */
-                        //td.ship-8{ /* submarine */
-                        //td.ship-9{ /* submarine */
-                        //
-                        //td.ship-10{ /* destroyer */
-                        //td.ship-11{ /* destroyer */
-                        //td.ship-12{ /* destroyer */
-                        //td.ship-13{ /* destroyer */
-                        //td.ship-14{ /* destroyer */
-                        //
-                        //td.ship-15{ /* carrier */
-                        //td.ship-16{ /* carrier */
-                        //td.ship-17{ /* carrier */
-                        //td.ship-18{ /* carrier */
-                        //td.ship-19{ /* carrier */
-                        //td.ship-20{ /* carrier */
-                        //td.ship-21{ /* carrier */
-
-                        
-                        var adding    = $scope.adding;
-                        //console.log( 'scope %o', $scope );
-                        console.log( 'colStatus %o adding %s', col['status'], adding );
-                        
-                        
-                        if ( col['status'] == 0 ) { // sea
-                            if ( adding ) {
-                                $scope.result = 'adding';
-                                $scope.addShip(x, y);
-                            
-                            } else {
-                                $scope.result = 'water';
-                            }
-                            
-                        } else
-                        if ( col['status'] == 1 ) { // used
-                            var zero             = col.shipZero;
-                            var shipName         = col.shipName;
-                            var shipUser         = col.user;
-                            
-                            var zX               = zero[0];
-                            var zY               = zero[1];
-                            var shipZ            = $scope.board[ zX ][ zY ];
-                            var shipSize         = $scope.shipsSizes[ shipName ];
-
-                            col.status           = 2; //hit
-                            col.shipPos          = 0; //transparent
-                            shipZ.shipHits      += 1;
-                            
-                            console.log( 'hit ship %s size %d hits %d', shipName, shipSize, shipZ.shipHits);
-                            
-                            if ( shipZ.shipHits == shipSize ) {
-                                $scope.result = 'you\'ve blown a '+shipName+' from '+shipUser+'!!';
-                                console.log( 'you\'ve blown a '+shipName+' from '+shipUser+'!!' );
-
-                                var shipOri   = shipZ.shipOrientation;
-                                var pStart    = shipOri ? zY : zX;
-                                var pEnd      = pStart  + shipSize - 1; // todo: check border
-                                
-                                for ( var p = pEnd; p >= pStart; p-- ) {
-                                    console.log( '  p %d', p);
-                                    
-                                    var nX     = p;
-                                    var nY     = zY;
-                                    
-                                    if ( shipOri ) { // horiz
-                                        nX     = zX;
-                                        nY     = p;
-                                    }
-                                    
-                                    console.log( '    X %d Y %s', nX, nY );
-                                    
-                                    $scope.board[ nX ][ nY ].status           = 0;
-                                    $scope.board[ nX ][ nY ].user             = '';
-                                    $scope.board[ nX ][ nY ].shipHits         = 0;
-                                    $scope.board[ nX ][ nY ].shipName         = '';
-                                    $scope.board[ nX ][ nY ].shipPos          = 0;
-                                    $scope.board[ nX ][ nY ].shipOrientation  = true;
-                                    $scope.board[ nX ][ nY ].shipZero         = [-1, -1];
-                                }
-                            } else {
-                                $scope.result = 'hit!';
-                            }
-                        }
-                    };
-                
                     location.hash = '#/game';
                 }
             };
@@ -364,7 +180,7 @@
                 return;
             }
             
-            $scope.user    = userData;
+            $scope.user       = userData;
             
             $scope.shipsOpts  = [
                 { name: 'boat'     , size: 1, imgStart:  1 },
@@ -383,6 +199,192 @@
             $scope.ships       = $scope.shipsOpts[0];
             
             $scope.orientation = true;
+            
+
+
+            $scope.getClasses = function ( col       ) {
+                if ( $scope.user.uid == col.user ) {
+                    return 'state-'+col.status+' ship-'+col.shipPos+' ori-'+col.shipOrientation;
+                } else {
+                    return 'state-0 ship-0 ori-true';
+                }
+            };
+            
+
+            $scope.addShip    = function ( x, y      ) {
+                var shipName  = $scope.ships.name;
+                var shipSize  = $scope.ships.size;
+                var shipIndex = $scope.ships.imgStart;
+                var shipOri   = $scope.orientation;
+                
+                var pStart    = $scope.orientation ? y : x;
+                var pEnd      = pStart + shipSize; // todo: check border
+                
+                //console.log( 'adding ship %s size %d orientation %s X %d Y %d S %d E %d', shipName, shipSize, shipOri, x, y, pStart, pEnd );
+                
+                
+                if ( $scope.orientation ) {
+                    if ( pEnd > $scope.setup.width ) {
+                        console.log( ' too close to border pEnd %d > width %d', pEnd, $scope.setup.width );
+                        $scope.result = 'too close to border';
+                        return;
+                    }
+                } else {
+                    if ( pEnd > $scope.setup.height ) {
+                        console.log( ' too close to border pEnd %d > height %d', pEnd, $scope.setup.height);
+                        $scope.result = 'too close to border';
+                        return;
+                    }
+                }
+                
+                
+                for ( var p = pStart; p < pEnd; p++ ) {
+                    if ( $scope.orientation ) { // horiz
+                        if ( $scope.board[ x ][ p ][ 'status' ] != 0 ) {
+                            console.log( ' already used x %d y %d', x, p);
+                            $scope.result = 'already taken';
+                            return;
+                        }
+                        
+                    } else {
+                        if ( $scope.board[ p ][ y ][ 'status' ] != 0 ) {
+                            console.log( ' already used x %d y %d', p, y);
+                            $scope.result = 'already taken';
+                            return;
+                        }
+                    }
+                }
+
+                
+                var shipPos = 0;
+                for ( var p = pStart; p < pEnd; p++ ) {
+                    //console.log( '  p %d', p);
+                    
+                    var nX     = p;
+                    var nY     = y;
+                    
+                    if ( $scope.orientation ) { // horiz
+                        nX     = x;
+                        nY     = p;
+                    }
+                    
+                    //console.log( '    X %d Y %s', nX, nY );
+                    
+                    $scope.board[ nX ][ nY ].status          = 1;
+                    $scope.board[ nX ][ nY ].user            = $scope.user.uid;
+                    $scope.board[ nX ][ nY ].shipName        = shipName;
+                    $scope.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
+                    $scope.board[ nX ][ nY ].shipOrientation = $scope.orientation;
+                    $scope.board[ nX ][ nY ].shipZero        = [x, y];
+                    
+                    shipPos += 1;
+                }
+            };
+            
+
+            $scope.updateCell = function ( x, y, col ) {
+                //console.log('updating x %d y %d cell %o', x, y, col );
+                //state-0 { /* sea */
+                //state-1 { /* used */
+                //state-2 { /* hit */
+                //state-3 { /* sunk */
+                //
+                //
+                //
+                //td.ship-0{ /* transparent */
+                //
+                //td.ship-1{ /* boat */
+                //
+                //td.ship-2{ /* fragate */
+                //td.ship-3{ /* fragate */
+                //td.ship-4{ /* fragate */
+                //td.ship-5{ /* fragate */
+                //
+                //td.ship-6{ /* submarine */
+                //td.ship-7{ /* submarine */
+                //td.ship-8{ /* submarine */
+                //td.ship-9{ /* submarine */
+                //
+                //td.ship-10{ /* destroyer */
+                //td.ship-11{ /* destroyer */
+                //td.ship-12{ /* destroyer */
+                //td.ship-13{ /* destroyer */
+                //td.ship-14{ /* destroyer */
+                //
+                //td.ship-15{ /* carrier */
+                //td.ship-16{ /* carrier */
+                //td.ship-17{ /* carrier */
+                //td.ship-18{ /* carrier */
+                //td.ship-19{ /* carrier */
+                //td.ship-20{ /* carrier */
+                //td.ship-21{ /* carrier */
+
+                
+                var adding    = $scope.adding;
+                //console.log( 'scope %o', $scope );
+                console.log( 'colStatus %o adding %s', col['status'], adding );
+                
+                
+                if ( col['status'] == 0 ) { // sea
+                    if ( adding ) {
+                        $scope.result = 'adding';
+                        $scope.addShip(x, y);
+                    
+                    } else {
+                        $scope.result = 'water';
+                    }
+                    
+                } else
+                if ( col['status'] == 1 ) { // used
+                    var zero             = col.shipZero;
+                    var shipName         = col.shipName;
+                    var shipUser         = col.user;
+                    
+                    var zX               = zero[0];
+                    var zY               = zero[1];
+                    var shipZ            = $scope.board[ zX ][ zY ];
+                    var shipSize         = $scope.shipsSizes[ shipName ];
+
+                    col.status           = 2; //hit
+                    col.shipPos          = 0; //transparent
+                    shipZ.shipHits      += 1;
+                    
+                    console.log( 'hit ship %s size %d hits %d', shipName, shipSize, shipZ.shipHits);
+                    
+                    if ( shipZ.shipHits == shipSize ) {
+                        $scope.result = 'you\'ve blown a '+shipName+' from '+shipUser+'!!';
+                        console.log( 'you\'ve blown a '+shipName+' from '+shipUser+'!!' );
+
+                        var shipOri   = shipZ.shipOrientation;
+                        var pStart    = shipOri ? zY : zX;
+                        var pEnd      = pStart  + shipSize - 1; // todo: check border
+                        
+                        for ( var p = pEnd; p >= pStart; p-- ) {
+                            console.log( '  p %d', p);
+                            
+                            var nX     = p;
+                            var nY     = zY;
+                            
+                            if ( shipOri ) { // horiz
+                                nX     = zX;
+                                nY     = p;
+                            }
+                            
+                            console.log( '    X %d Y %s', nX, nY );
+                            
+                            $scope.board[ nX ][ nY ].status           = 0;
+                            $scope.board[ nX ][ nY ].user             = '';
+                            $scope.board[ nX ][ nY ].shipHits         = 0;
+                            $scope.board[ nX ][ nY ].shipName         = '';
+                            $scope.board[ nX ][ nY ].shipPos          = 0;
+                            $scope.board[ nX ][ nY ].shipOrientation  = true;
+                            $scope.board[ nX ][ nY ].shipZero         = [-1, -1];
+                        }
+                    } else {
+                        $scope.result = 'hit!';
+                    }
+                }
+            };
         };
 
 
@@ -410,6 +412,15 @@
                         }
         );
 
+        demoApp.factory({
+            "setup": function(){
+                return {};
+            },
+            "board": function(){
+                return {};
+            }
+        });
+        
         //var controllers = {};
         //    controllers.initController = initController;
         //    controllers.loadController = initController;
