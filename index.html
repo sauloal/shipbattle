@@ -26,7 +26,7 @@
 
 
     <script>
-        var versionString = 'v2013_12_15_23_49';
+        var versionString = 'v2013_12_16_00_14';
         var urlBase       = 'fundo';
         var url           = 'https://'+urlBase+'.firebaseio.com';
         var FUbase        = url;
@@ -51,7 +51,7 @@
                 console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
                 
                 userData      = user;
-                location.hash = '#/game';
+                location.hash = '#/loading';
                 
                 //accessToken - The Facebook access token (string).
                 //displayName - The user's display name (string).
@@ -97,26 +97,39 @@
             console.log( 'init auth AUTH %o USER %o', $scope.auth, userData );
 
             if (userData) {
-                location.hash = '#/game';
+                location.hash = '#/loading';
             }
         }
         
         
-
-        function gameController ( $scope, angularFire ) {
-            var FUboard          = url + '/board';
-            var FDboard          = new Firebase( FUboard );
-            $scope.versionString = versionString;
+        function loadController ( $scope, angularFire ) {
+            $scope.url           = url;
             $scope.auth          = auth;
+            $scope.versionString = versionString;
+            $scope.user          = userData;
 
-            console.log( 'game auth AUTH %o USER %o', $scope.auth, userData );
+            console.log( 'load auth AUTH %o USER %o', $scope.auth, userData );
+
 
             if ( !userData ) {
                 location.hash = '#/init';
                 return;
             }
             
-            $scope.user    = userData;
+            var FUboard          = url + '/board';
+            var FDboard          = new Firebase( FUboard );
+            
+            var FUsetup          = url + '/setup';
+            var FDsetup          = new Firebase( FUsetup );
+
+
+            var control = function ( ) {
+                return function( $scope ) {
+                    //console.log(' starting');
+                    this.scope = $scope;
+                };
+            }();
+            
             
             control.prototype.run = function() {
                 this.scope.url = url;
@@ -126,7 +139,7 @@
                     this.scope.size = this.scope.setup.width * this.scope.setup.height;
                     console.log('  READY. size: %d', this.scope.size);
         
-                    $scope.getClasses = function ( col ) {
+                    $scope.getClasses = function ( col       ) {
                         if ( $scope.user.uid == col.user ) {
                             return 'state-'+col.status+' ship-'+col.shipPos+' ori-'+col.shipOrientation;
                         } else {
@@ -309,11 +322,48 @@
                             }
                         }
                     };
+                
+                    location.hash = '#/game';
                 }
             };
 
-            
+
             $scope.ctrl       = new control( $scope );
+
+            angularFire( FDboard, $scope, 'board' ).then( function(){
+                console.log('FDboard %o', $scope.board );
+                $scope.ctrl.run();
+            });
+
+            angularFire( FDsetup, $scope, 'setup' ).then( function(){
+                console.log('FDsetup %o', $scope.setup );
+                $scope.ctrl.run();
+            });
+
+            //var FUuser = url + '/user';
+            //var FDuser = new Firebase( FUuser );
+            //angularFire( FDuser, $scope, 'user' ).then( function(){
+                //console.log('FDuser ' + $scope.user );
+                //$scope.user = user;
+                //$scope.ctrl.run();
+            //});
+        }
+
+        
+
+        function gameController ( $scope, angularFire ) {
+            $scope.versionString = versionString;
+            $scope.auth          = auth;
+
+            console.log( 'game auth AUTH %o USER %o', $scope.auth, userData );
+
+            if ( !userData ) {
+                location.hash = '#/init';
+                return;
+            }
+            
+            $scope.user    = userData;
+            
             
             
             $scope.shipsOpts  = [
@@ -330,33 +380,9 @@
                 $scope.shipsSizes[ $scope.shipsOpts[s].name ] = $scope.shipsOpts[s].size;
             }
             
-            
             $scope.ships       = $scope.shipsOpts[0];
             
             $scope.orientation = true;
-
-
-            angularFire( FDboard, $scope, 'board' ).then( function(){
-                console.log('FDboard %o', $scope.board );
-                $scope.ctrl.run();
-            });
-
-            var FUsetup = url + '/setup';
-            var FDsetup = new Firebase( FUsetup );
-            angularFire( FDsetup, $scope, 'setup' ).then( function(){
-                console.log('FDsetup %o', $scope.setup );
-                $scope.ctrl.run();
-            });
-
-            //var FUuser = url + '/user';
-            //var FDuser = new Firebase( FUuser );
-            //angularFire( FDuser, $scope, 'user' ).then( function(){
-                //console.log('FDuser ' + $scope.user );
-                //$scope.user = user;
-                //$scope.ctrl.run();
-            //});
-
-
         };
 
 
@@ -370,6 +396,10 @@
                                     templateUrl: 'init.html',
                                     controller: 'initController'
                                 })
+                                .when('/loading', {
+                                    templateUrl: 'loading.html',
+                                    controller: 'loadController'
+                                })
                                 .when('/game', {
                                     templateUrl: 'game.html',
                                     controller: 'gameController'
@@ -380,10 +410,11 @@
                         }
         );
 
-        var controllers = {};
-            controllers.initController = initController;
-            controllers.gameController = gameController;
-        
-        demoApp.controller( controllers );
+        //var controllers = {};
+        //    controllers.initController = initController;
+        //    controllers.loadController = initController;
+        //    controllers.gameController = gameController;
+        //
+        //demoApp.controller( controllers );
     </script>
 </html>
