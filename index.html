@@ -33,15 +33,17 @@
 
 
         var auth    = new FirebaseSimpleLogin(FDbase, function(error, user) {
-            console.log('init auth');
+            console.log('auth');
 
             if (error) {
                 // an error occurred while attempting login
+                console.log('auth error');
                 console.log(error);
                 this.user = null;
                 
             } else if (user) {
                 // user authenticated with Firebase
+                console.log('auth user');
                 console.log(user);
                 console.log('User ID: ' + user.id + ', Provider: ' + user.provider);
                 this.user = user;
@@ -55,7 +57,7 @@
                 //uid - A unique id combining the provider and uid, intended as the unique key for user data (string).
 
             } else {
-                console.log('user logged out');
+                console.log('auth user logged out');
                 // user is logged out
                 this.user = null;
             }
@@ -65,10 +67,10 @@
         
         function login  ( provider ) {
             console.log( 'loggin in' );
-            //auth.login(provider, {
-            //    rememberMe: true,
-            //    scope: 'email'
-            //});
+            auth.login(provider, {
+                rememberMe: true,
+                scope: 'email'
+            });
             location.hash = '#/game';
         };
         
