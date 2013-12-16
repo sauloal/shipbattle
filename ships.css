@@ -144,7 +144,7 @@ td.ship-21{ /* carrier */
 td.ori-false { /* vertical */
     -webkit-transform: scale(1);
     -webkit-transform: translateZ(0.00001px);
-    -webkit-transform: rotate(270deg);
+    -webkit-transform: rotate(90deg);
     -moz-transform: rotate(90deg);
     -ms-transform: rotate(90deg);
     -o-transform: rotate(90deg);
