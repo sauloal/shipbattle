@@ -21,6 +21,7 @@ table, tr {
 td.state-0 { /* sea */
     color: blue;
     background-color: blue;
+    -webkit-transform:scale(1);
 }
 td.state-1 { /* used */
     background-color: blue;
@@ -28,11 +29,13 @@ td.state-1 { /* used */
     /*background: blue;*/
     /*color: black;*/
     /*background: black;*/
+    -webkit-transform:scale(1);
 }
 td.state-2 { /* hit */
     background-image:url('img/fireball.png');
     background-color: blue;
     /*background-color: red;*/
+    -webkit-transform:scale(1);
 }
 
 
@@ -40,83 +43,106 @@ td.state-2 { /* hit */
 
 
 td.ship-0{ /* transparent */
+    -webkit-transform:scale(1);
 }
 
 
 td.ship-1{ /* boat */
     background-image:url('img/boat_00.png');
+    -webkit-transform:scale(1);
 }
 
 
 td.ship-2{ /* fragate */
     background-image:url('img/fragate_00.png');
+    -webkit-transform:scale(1);
 }
 td.ship-3{ /* fragate */
     background-image:url('img/fragate_01.png');
+    -webkit-transform:scale(1);
 }
 td.ship-4{ /* fragate */
     background-image:url('img/fragate_02.png');
+    -webkit-transform:scale(1);
 }
 td.ship-5{ /* fragate */
     background-image:url('img/fragate_03.png');
+    -webkit-transform:scale(1);
 }
 
 
 td.ship-6{ /* submarine */
     background-image:url('img/submarine_00.png');
+    -webkit-transform:scale(1);
 }
 td.ship-7{ /* submarine */
     background-image:url('img/submarine_01.png');
+    -webkit-transform:scale(1);
 }
 td.ship-8{ /* submarine */
     background-image:url('img/submarine_02.png');
+    -webkit-transform:scale(1);
 }
 td.ship-9{ /* submarine */
     background-image:url('img/submarine_03.png');
+    -webkit-transform:scale(1);
 }
 
 
 td.ship-10{ /* destroyer */
     background-image:url('img/destroyer_00.png');
+    -webkit-transform:scale(1);
 }
 td.ship-11{ /* destroyer */
     background-image:url('img/destroyer_01.png');
+    -webkit-transform:scale(1);
 }
 td.ship-12{ /* destroyer */
     background-image:url('img/destroyer_02.png');
+    -webkit-transform:scale(1);
 }
 td.ship-13{ /* destroyer */
     background-image:url('img/destroyer_03.png');
+    -webkit-transform:scale(1);
 }
 td.ship-14{ /* destroyer */
     background-image:url('img/destroyer_04.png');
+    -webkit-transform:scale(1);
 }
 
 
 td.ship-15{ /* carrier */
     background-image:url('img/carrier_00.png');
+    -webkit-transform:scale(1);
 }
 td.ship-16{ /* carrier */
     background-image:url('img/carrier_01.png');
+    -webkit-transform:scale(1);
 }
 td.ship-17{ /* carrier */
     background-image:url('img/carrier_02.png');
+    -webkit-transform:scale(1);
 }
 td.ship-18{ /* carrier */
     background-image:url('img/carrier_03.png');
+    -webkit-transform:scale(1);
 }
 td.ship-19{ /* carrier */
     background-image:url('img/carrier_04.png');
+    -webkit-transform:scale(1);
 }
 td.ship-20{ /* carrier */
     background-image:url('img/carrier_05.png');
+    -webkit-transform:scale(1);
 }
 td.ship-21{ /* carrier */
     background-image:url('img/carrier_06.png');
+    -webkit-transform:scale(1);
 }
 
 
 td.ori-false { /* vertical */
+    -webkit-transform: scale(1);
     -webkit-transform: translateZ(0.00001px);
     -webkit-transform: rotate(270deg);
     -moz-transform: rotate(90deg);
