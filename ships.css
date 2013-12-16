@@ -123,3 +123,30 @@ td.ori-false { /* vertical */
     -o-transform: rotate(90deg);
     transform: rotate(90deg);
 }
+
+body:after{
+    display:none;
+    content: ;
+    url('img/fireball.png'),
+    url('img/boat_00.png'),
+    url('img/fragate_00.png'),
+    url('img/fragate_01.png'),
+    url('img/fragate_02.png'),
+    url('img/fragate_03.png'),
+    url('img/submarine_00.png'),
+    url('img/submarine_01.png'),
+    url('img/submarine_02.png'),
+    url('img/submarine_03.png'),
+    url('img/destroyer_00.png'),
+    url('img/destroyer_01.png'),
+    url('img/destroyer_02.png'),
+    url('img/destroyer_03.png'),
+    url('img/destroyer_04.png'),
+    url('img/carrier_00.png'),
+    url('img/carrier_01.png'),
+    url('img/carrier_02.png'),
+    url('img/carrier_03.png'),
+    url('img/carrier_04.png'),
+    url('img/carrier_05.png'),
+    url('img/carrier_06.png');
+}
