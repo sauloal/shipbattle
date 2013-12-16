@@ -4,12 +4,12 @@
             <span data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'H' : 'V' }} </span>
             
             <table>
-                <tr data-ng-repeat="row in data.board">
+                <tr data-ng-repeat="row in board">
                     <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( {{ $parent.$index }}, {{ $index }}, col )"></td>
                 </tr>
             </table>
             
             <label>{{ result }}</label>
             User {{ user.DisplayName }} <small><a href="javascript:logout();">Logout</a></small>
-            <small> Url <a href="{{ url }}">{{ url }}</a> {{ versionString }}</small> {{ data.setup.width }} x {{ data.setup.height }}<br/>
+            <small> Url <a href="{{ url }}">{{ url }}</a> {{ versionString }}</small> {{ setup.width }} x {{ setup.height }}<br/>
             
