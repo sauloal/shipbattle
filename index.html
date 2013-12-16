@@ -89,30 +89,34 @@
 
         
         
-        function initController ( $scope, angularFire ) {
+        function initController ( $scope, angularFire, data ) {
             $scope.url           = url;
             $scope.auth          = auth;
             $scope.versionString = versionString;
+            $scope.data          = data;
 
             console.log( 'init auth AUTH %o USER %o', $scope.auth, userData );
 
             if (userData) {
+                data.userData = data;
                 location.hash = '#/loading';
             }
         }
         
         
-        function loadController ( $scope, angularFire, setup, board  ) {
+        function loadController ( $scope, angularFire, data ) {
             $scope.url           = url;
             $scope.auth          = auth;
             $scope.versionString = versionString;
             $scope.user          = userData;
+            $scope.data          = data;
 
             console.log( 'load auth AUTH %o USER %o', $scope.auth, userData );
 
 
             if ( !userData ) {
-                location.hash = '#/init';
+                $scope.data.userData = userData;
+                location.hash        = '#/init';
                 return;
             }
             
@@ -134,7 +138,7 @@
             control.prototype.run = function() {
                 this.scope.url = url;
     
-                if ( this.scope.user && this.scope.setupD && this.scope.boardD ) {
+                if ( this.scope.user && this.scope.setup && this.scope.board ) {
                     console.log('user %o setup %o board %o', this.scope.user, this.scope.setup, this.scope.board);
                     console.log('  READY' );
         
@@ -145,15 +149,15 @@
 
             $scope.ctrl       = new control( $scope );
 
-            angularFire( FDboard, $scope, 'boardD' ).then( function(){
-                console.log('FDboard %o', $scope.boardD );
-                $scope.board = $scope.boardD;
+            angularFire( FDboard, $scope, 'board' ).then( function(){
+                console.log('FDboard %o', $scope.board );
+                $scope.data.board = $scope.board;
                 $scope.ctrl.run();
             });
 
-            angularFire( FDsetup, $scope, 'setupD' ).then( function(){
-                console.log('FDsetup %o', $scope.setupD );
-                $scope.setup = $scope.setupD;
+            angularFire( FDsetup, $scope, 'setup' ).then( function(){
+                console.log('FDsetup %o', $scope.setup );
+                $scope.data.setup = $scope.setup;
                 $scope.ctrl.run();
             });
 
@@ -168,17 +172,16 @@
 
         
 
-        function gameController ( $scope, angularFire, setup, board ) {
+        function gameController ( $scope, angularFire, data ) {
             $scope.url           = url;
             $scope.auth          = auth;
             $scope.versionString = versionString;
             $scope.user          = userData;
-            $scope.setup         = setup;
-            $scope.board         = board;
+            $scope.data          = data;
             
             console.log( 'game auth AUTH %o USER %o', $scope.auth, userData );
-            console.log( 'game setup %o board %o', $scope.setup, $scope.board );
-            $scope.size = $scope.setup.width * $scope.setup.height;
+            console.log( 'game setup %o board %o', $scope.data.setup, $scope.data.board );
+            $scope.size = $scope.data.setup.width * $scope.data.setup.height;
 
 
             if ( !userData ) {
@@ -186,7 +189,6 @@
                 return;
             }
             
-            $scope.user       = userData;
             
             $scope.shipsOpts  = [
                 { name: 'boat'     , size: 1, imgStart:  1 },
@@ -230,14 +232,14 @@
                 
                 
                 if ( $scope.orientation ) {
-                    if ( pEnd > $scope.setup.width ) {
-                        console.log( ' too close to border pEnd %d > width %d', pEnd, $scope.setup.width );
+                    if ( pEnd > $scope.data.setup.width ) {
+                        console.log( ' too close to border pEnd %d > width %d', pEnd, $scope.data.setup.width );
                         $scope.result = 'too close to border';
                         return;
                     }
                 } else {
-                    if ( pEnd > $scope.setup.height ) {
-                        console.log( ' too close to border pEnd %d > height %d', pEnd, $scope.setup.height);
+                    if ( pEnd > $scope.data.setup.height ) {
+                        console.log( ' too close to border pEnd %d > height %d', pEnd, $scope.data.setup.height);
                         $scope.result = 'too close to border';
                         return;
                     }
@@ -246,14 +248,14 @@
                 
                 for ( var p = pStart; p < pEnd; p++ ) {
                     if ( $scope.orientation ) { // horiz
-                        if ( $scope.board[ x ][ p ][ 'status' ] != 0 ) {
+                        if ( $scope.data.board[ x ][ p ][ 'status' ] != 0 ) {
                             console.log( ' already used x %d y %d', x, p);
                             $scope.result = 'already taken';
                             return;
                         }
                         
                     } else {
-                        if ( $scope.board[ p ][ y ][ 'status' ] != 0 ) {
+                        if ( $scope.data.board[ p ][ y ][ 'status' ] != 0 ) {
                             console.log( ' already used x %d y %d', p, y);
                             $scope.result = 'already taken';
                             return;
@@ -276,12 +278,12 @@
                     
                     //console.log( '    X %d Y %s', nX, nY );
                     
-                    $scope.board[ nX ][ nY ].status          = 1;
-                    $scope.board[ nX ][ nY ].user            = $scope.user.uid;
-                    $scope.board[ nX ][ nY ].shipName        = shipName;
-                    $scope.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
-                    $scope.board[ nX ][ nY ].shipOrientation = $scope.orientation;
-                    $scope.board[ nX ][ nY ].shipZero        = [x, y];
+                    $scope.data.board[ nX ][ nY ].status          = 1;
+                    $scope.data.board[ nX ][ nY ].user            = $scope.user.uid;
+                    $scope.data.board[ nX ][ nY ].shipName        = shipName;
+                    $scope.data.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
+                    $scope.data.board[ nX ][ nY ].shipOrientation = $scope.orientation;
+                    $scope.data.board[ nX ][ nY ].shipZero        = [x, y];
                     
                     shipPos += 1;
                 }
@@ -348,7 +350,7 @@
                     
                     var zX               = zero[0];
                     var zY               = zero[1];
-                    var shipZ            = $scope.board[ zX ][ zY ];
+                    var shipZ            = $scope.data.board[ zX ][ zY ];
                     var shipSize         = $scope.shipsSizes[ shipName ];
 
                     col.status           = 2; //hit
@@ -378,13 +380,13 @@
                             
                             console.log( '    X %d Y %s', nX, nY );
                             
-                            $scope.board[ nX ][ nY ].status           = 0;
-                            $scope.board[ nX ][ nY ].user             = '';
-                            $scope.board[ nX ][ nY ].shipHits         = 0;
-                            $scope.board[ nX ][ nY ].shipName         = '';
-                            $scope.board[ nX ][ nY ].shipPos          = 0;
-                            $scope.board[ nX ][ nY ].shipOrientation  = true;
-                            $scope.board[ nX ][ nY ].shipZero         = [-1, -1];
+                            $scope.data.board[ nX ][ nY ].status           = 0;
+                            $scope.data.board[ nX ][ nY ].user             = '';
+                            $scope.data.board[ nX ][ nY ].shipHits         = 0;
+                            $scope.data.board[ nX ][ nY ].shipName         = '';
+                            $scope.data.board[ nX ][ nY ].shipPos          = 0;
+                            $scope.data.board[ nX ][ nY ].shipOrientation  = true;
+                            $scope.data.board[ nX ][ nY ].shipZero         = [-1, -1];
                         }
                     } else {
                         $scope.result = 'hit!';
@@ -419,10 +421,7 @@
         );
 
         demoApp.factory({
-            "setup": function(){
-                return {};
-            },
-            "board": function(){
+            "data": function(){
                 return {};
             }
         });
