@@ -1,0 +1,25 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null"
+  }
+}
+
+
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth.uid == 'facebook:569178926'",
+    "board": {
+      "$x": {
+        "$y": {
+          "shipHits": { ".validate": "newData.isNumber()" },
+          "shipPos" : { ".validate": "newData.isNumber()" },
+          "status"  : { ".validate": "newData.isNumber()" },
+          "shiName" : { ".validate": "newData.isString()" },
+          ".write"  : "auth != null"
+        }
+      }
+    }
+  }
+}
