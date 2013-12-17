@@ -150,7 +150,11 @@ function gameController ( $scope, angularFire, $state ) {
         if ( $scope.user.uid == col.user ) {
             return 'state-'+col.status+' ship-'+col.shipPos+' ori-'+col.shipOrientation;
         } else {
-            return 'state-0 ship-0 ori-true';
+            if ( col.status != 1 ) {
+                return 'state-'+col.status+' ship-0 ori-true';
+            } else {
+                return 'state-0 ship-0 ori-true';
+            }
         }
     };
     
