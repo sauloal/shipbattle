@@ -14,11 +14,10 @@ accesser.prototype.getUser = function ( ) {
 accesser.prototype.authLogin = function ( error, user, callBackSuccess, callBackFail, callBackLogout ) {
     console.log('accesser callback');
 
-    if ( (!error) && (!this.userData) ) {
+    if ( (error !== 'null') && (this.userData !== 'null') ) {
         if (error) {
             // an error occurred while attempting login
-            console.log('accesser callback - auth error');
-            console.log(error);
+            console.log('accesser callback - auth error %o', error);
             this.userData      = null;
             callBackFail( error );
             
@@ -46,7 +45,7 @@ accesser.prototype.authLogin = function ( error, user, callBackSuccess, callBack
     
         }
     } else {
-        console.log('accesser callback - already logged in - user %o', user);
+        console.log('accesser callback - already logged in - userdata %o error %o user %o', this.userData, error, user);
         // already logged in
     }
 };

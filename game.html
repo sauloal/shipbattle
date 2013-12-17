@@ -1,18 +1,25 @@
-                <h1 data-ng-hide="board && setup" >Loading</h1>
+                <h1 data-ng-hide="game.board && game.setup" >Loading</h1>
     
-                <div data-ng-show="board && setup" >
-                    <h3> Hi {{ user.displayName }} </h3>
+                <div data-ng-show="game.board && game.setup" >
+                    <h3> Hi {{ user.displayName || "anonymous " + user.id }} </h3>
                     Add <input type="checkbox" data-ng-model="adding"/>
-                    <select data-ng-show="adding" data-ng-model='ships' ng-options='s.name for s in shipsOpts'></select>
+                    
+                    <select data-ng-show="adding" data-ng-model='ships' ng-options='s.name for s in game.setup.shipsOpts'></select>
+                    
                     <span data-ng-show="adding" data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'Horizontal' : 'Vertical' }} </span>
                     
                     <table>
-                        <tr data-ng-repeat="row in board">
+                        <tr data-ng-repeat="row in game.board">
                             <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( {{ $parent.$index }}, {{ $index }}, col )"></td>
                         </tr>
                     </table>
                     
-                    <label>{{ result }}</label>
-                    <small><span href="" data-ng-click="logout()">Logout</span></small><br>
-                    {{ setup.width }} x {{ setup.height }}<br/>
+                    <label>{{ result }}</label><br/>
+                    
+                    <button data-ng-click="logout()">Logout</button>
+                    <button data-ng-click="gotoPage('setup')">Setup</button><br>
+                    
+                    <small>
+                        {{ game.setup.width }} x {{ game.setup.height }} cells;
+                    </small>
                 </div>

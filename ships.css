@@ -1,3 +1,11 @@
+div.login {
+    background-image: url('img/icons.png');
+    background-size: 250px 50px;
+    width: 42px;
+    height: 45px;
+    display: inline-block;
+}
+
 td {
     height    : 30px;
     width     : 30px;
@@ -32,7 +40,7 @@ td.state-1 { /* used */
     -webkit-transform:scale(1);
 }
 td.state-2 { /* hit */
-    background-image:url('img/fireball.png');
+    background-image: url('img/fireball.png');
     background-color: blue;
     /*background-color: red;*/
     -webkit-transform:scale(1);

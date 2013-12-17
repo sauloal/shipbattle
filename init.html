@@ -1,4 +1,4 @@
-            <!--<div data-ng-controller="initController">-->
                 <h3> Please login </h3>
-                <h4><span href="" data-ng-click="login('facebook')">Facebook</span></h4>
-            <!--</div>-->
+                <span>
+                    <div data-ng-repeat="n in [] | range:providers.length" data-ng-show="providers[$index][1]" class="login login-{{ $index }}" style="background-position: {{ $index * -1 * 41 - $index + 1 }}px 0px;" data-ng-click="loginIndex($index)" alt="{{ providers[$index][0] }}"></div>
+                </span>

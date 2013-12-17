@@ -1,63 +1,16 @@
-<html>
-    <body></body>
-    <script src="https://cdn.firebase.com/v0/firebase.js"></script>
-    <script>
-        //https://fundo.firebaseio.com/#
-        var dataRef = new Firebase("https://fundo.firebaseio.com");
-        dataRef.set(null);
-        
-        var width  = 30;
-        var height = 30;
-        var board  = [];
-        
-        var setup = dataRef.child('setup');
-        setup.set( { width: width, height: height } );
-
-        var usr   = dataRef.child('user' );
-        usr.set( 'saulo' );
-        
-
-        var sendData = function ( coord, vars ) {
-            for ( var v = 0; v < vars.length; v++ ) {
-                var vcoord = coord + '/' + vars[v][0];
-                console.log( '  %s', vcoord );
-                dataRef.child( vcoord ).set( vars[v][1] );
-            }
-        };
-
-        
-        for ( var x = 0; x < 10; x++ ) {
-            for ( var y = 0; y < 10; y++ ) {
-                var coord = 'board/' + x + '/' + y;
-                // state, ship pos, ship id, user
-                var vars = [
-                            [ 'status'         ,          0],
-                            [ 'user'           ,         -1],
-                            [ 'shipHits'       ,          0],
-                            [ 'shipName'       ,         ''],
-                            [ 'shipPos'        ,          0],
-                            [ 'shipOrientation',       true],
-                            [ 'shipZero'       ,   [-1, -1]],
-                        ];
-                
-                sendData(coord, vars);
-            }
-        }
-
-        console.log( 'finished' );
-        
-        //state-0 { /* sea */
-        //state-1 { /* used */
-        //state-2 { /* hit */
-        //state-3 { /* sunk */
-        //
-        //ship-0{ /* transparent */
-        //ship-1{ /* triangle top */
-        //ship-2{ /* triangle right */
-        //ship-3{ /* triangle bottom */
-        //ship-4{ /* triangle left */
-        //ship-5{ /* middle horizontal */
-        //ship-6{ /* middle vertical */
-        
-    </script>
-</html>
+<h3>Setup</h3>
+<label for="inpWid">Width </label><input id="inpWid" type="range" min="10" max="1000" step="1" data-ng-model='currWid'/><label for="inpSize">{{ currWidth }}</label><br/>
+<label for="inpHei">Height</label><input id="inpHei" type="range" min="10" max="1000" step="1" data-ng-model='currHei'/><label for="inpSize">{{ currWidth }}</label><br/>
+<button data-ng-click="newShip()">New Ship</button><button data-ng-click="resetShips()">Reset Ships</button>
+<ul>
+    <li data-ng-repeat="ship in game.setup.shipsOpts">
+        <input type="text" data-ng-model='ship.name'/>
+        <label for="inpSiz">Size     </label><input id="inpSiz" type="range" min="1" max="20"  step="1" data-ng-model='ship.size'    /><label for="inpSiz">{{ ship.size     }}</label>
+        <label for="inpImg">imgStart </label><input id="inpImg" type="range" min="1" max="100" step="1" data-ng-model='ship.imgStart'/><label for="inpImg">{{ ship.imgStart }}</label> - <span data-ng-click='deleteShip($index)'>delete</span>
+        <table><tr><td data-ng-repeat="n in [] | range:ship.size" class="ship-{{ ship.imgStart + $index }} ori-true"></td></tr></table>
+    </li>
+</ul>
+<button data-ng-click="apply()">Apply</button>
+<button data-ng-click="cleanBoard()">clean board</button>
+<button data-ng-click="reset()">Reset</button><br/>
+<span href="" data-ng-click="gotoPage('game')">Return to game</span><br>

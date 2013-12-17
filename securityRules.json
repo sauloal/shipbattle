@@ -9,17 +9,20 @@
 {
   "rules": {
     ".read": "auth != null",
-    ".write": "auth.uid == 'facebook:569178926'",
+    ".write": "auth.uid != null",
     "board": {
       "$x": {
         "$y": {
-          "shipHits": { ".validate": "newData.isNumber()" },
-          "shipPos" : { ".validate": "newData.isNumber()" },
-          "status"  : { ".validate": "newData.isNumber()" },
-          "shiName" : { ".validate": "newData.isString()" },
-          ".write"  : "auth != null"
+          "shipHits"      : { ".validate": "newData.isNumber()" , ".write": "auth != null" },
+          "shiName"       : { ".validate": "newData.isString()" , ".write": "auth != null"  },
+          "shiOrientation": { ".validate": "newData.isBoolean()", ".write": "auth != null"  },
+          "shipPos"       : { ".validate": "newData.isNumber()" , ".write": "auth != null"  },
+          "status"        : { ".validate": "newData.isNumber()" , ".write": "auth != null"  },
         }
       }
+    },
+    "setup": {
+          ".write": "auth.uid == 'facebook:569178926'",
     }
   }
 }
