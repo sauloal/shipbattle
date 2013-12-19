@@ -5,6 +5,16 @@ var accesser = function( firebaseInst ) {
 };
 
 
+accesser.prototype.providers = [
+    ['facebook',   true ], // working
+    ['twitter',    false],
+    ['github',     false],
+    ['persona',    false],
+    ['password',   false], //needs work
+    ['anonymous',  true ]  // working
+];
+
+
 accesser.prototype.getUser = function ( ) {
     console.log('accesser getUser');
     return this.userData;

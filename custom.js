@@ -10,8 +10,7 @@ var access        = new accesser( FDbase );
 
 
 
-
-function bodyController ( $scope, angularFire, $state ) {
+function bodyController ( $scope, $state ) {
     $scope.url           = url;
     $scope.versionString = versionString;
     $scope.access        = access;
@@ -21,15 +20,21 @@ function bodyController ( $scope, angularFire, $state ) {
     $scope.setPage       = function ( page ) {
         console.log( 'bodyController SET PAGE %s scope %o state %o', page, $scope, $state );
         
-        $scope.$apply( function() { $scope.gotoPage( page ); } );
-
-        //$state.transitionTo( page );
+        $scope.gotoPage( page );
+        
+        //try {
+        //    $scope.$apply( function() { $scope.gotoPage( page ); } );
+        //} catch(e) {
+        //    alert(e);
+        //}
     };
     
     $scope.gotoPage       = function ( page ) {
         $state.transitionTo( page );
     }
     
+
+    $scope.setPage( 'init' );
 
     
 
@@ -60,33 +65,25 @@ function bodyController ( $scope, angularFire, $state ) {
         console.log('initController logout called init');
     };
 
-    $scope.access.prepare( onSuccess, onFailure, onLogout );
-
 
     $scope.login = function ( provider ) {
         $scope.access.commit( provider );
     };
 
     
+    $scope.access.prepare( onSuccess, onFailure, onLogout );
+
     
     console.log( 'bodyController going to init');
-    $scope.setPage( 'init' );
     console.log( 'bodyController went to init');
 }
 
 
-function initController ( $scope, angularFire, $state ) {
-    console.log( 'init SCOPE %o ANGULAR %o STATE %o', $scope, angularFire, $state );
+function initController ( $scope, $state ) {
+    console.log( 'init SCOPE %o STATE %o', $scope, $state );
     console.log( 'init ACCESS %o', $scope.access );
 
-    $scope.providers = [
-        ['facebook',   true ],
-        ['twitter',    false],
-        ['github',     false],
-        ['persona',    false],
-        ['password',   false], //needs work
-        ['anonymous',  true ]
-    ];
+    $scope.providers = $scope.access.providers;
     
     $scope.loginIndex = function ( index ) {
         var provider = $scope.providers[index];
@@ -97,13 +94,16 @@ function initController ( $scope, angularFire, $state ) {
 }
 
 
-function gameController ( $scope, angularFire, $state ) {
+function gameController ( $scope, $state, gameDB ) {
     $scope.url           = url;
     $scope.versionString = versionString;
-
+    
+    $scope.game          = gameDB;
+    console.log( 'gameDB %o', gameDB );
+    
     console.log( 'game ACCESS %o', $scope.access );
     
-
+    
     $scope.logout = function () {
         $scope.access.logout();
     };
@@ -119,31 +119,21 @@ function gameController ( $scope, angularFire, $state ) {
     
     console.log( 'game has user %o', $scope.user );
     
-
-    
-    angularFire( FDbase, $scope, 'game' ).then( function(){
-        console.log('FDgame %o', $scope.game);
-
-        $scope.updateShipSizes();
-    });
-    
     
     $scope.updateShipSizes = function() {
         $scope.shipsSizes  = {};
-        for ( var s = 0; s < $scope.game.setup.shipsOpts.length; s++ ) {
-            $scope.shipsSizes[ $scope.game.setup.shipsOpts[s].name ] = $scope.game.setup.shipsOpts[s].size;
+        console.log("shipsOpts %o", $scope.shipsOpts);
+        
+        for ( var s = 0; s < $scope.shipsOpts.length; s++ ) {
+            $scope.shipsSizes[ $scope.shipsOpts[s].name ] = $scope.game.setup.shipsOpts[s].size;
         }
-        $scope.ships       = $scope.game.setup.shipsOpts[0];
+        
+        $scope.ships       = $scope.shipsOpts[0];
 
         //$scope.game.setup.shipsOpts.on('changed', function(s) {
         //    $scope.updateShipSizes();
         //});
     };
-    
-
-
-
-    $scope.orientation = true;
     
 
     $scope.getClasses = function ( col       ) {
@@ -218,12 +208,20 @@ function gameController ( $scope, angularFire, $state ) {
             
             //console.log( '    X %d Y %s', nX, nY );
             
-            $scope.game.board[ nX ][ nY ].status          = 1;
-            $scope.game.board[ nX ][ nY ].user            = $scope.user.uid;
-            $scope.game.board[ nX ][ nY ].shipName        = shipName;
-            $scope.game.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
-            $scope.game.board[ nX ][ nY ].shipOrientation = $scope.orientation;
-            $scope.game.board[ nX ][ nY ].shipZero        = [x, y];
+            $scope.updateRegister ( $scope.game.board[ nX ][ nY ], {
+                status         : 1,
+                user           : $scope.user.uid,
+                shipName       : shipName,
+                shipPos        : shipIndex + shipPos,
+                shipOrientation: $scope.orientation,
+                shipZero       : [x, y]
+            } );
+            //$scope.game.board[ nX ][ nY ].status          = 1;
+            //$scope.game.board[ nX ][ nY ].user            = $scope.user.uid;
+            //$scope.game.board[ nX ][ nY ].shipName        = shipName;
+            //$scope.game.board[ nX ][ nY ].shipPos         = shipIndex + shipPos;
+            //$scope.game.board[ nX ][ nY ].shipOrientation = $scope.orientation;
+            //$scope.game.board[ nX ][ nY ].shipZero        = [x, y];
             
             shipPos += 1;
         }
@@ -258,6 +256,11 @@ function gameController ( $scope, angularFire, $state ) {
             var shipZ            = $scope.game.board[ zX ][ zY ];
             var shipSize         = $scope.shipsSizes[ shipName ];
 
+      
+            if ( shipUser == $scope.user.uid ) {
+                return;
+            }
+            
             col.status           = 2; //hit
             col.shipPos          = 0; //transparent
             shipZ.shipHits      += 1;
@@ -285,19 +288,64 @@ function gameController ( $scope, angularFire, $state ) {
                     
                     console.log( '    X %d Y %s', nX, nY );
                     
-                    $scope.game.board[ nX ][ nY ].status           = 0;
-                    $scope.game.board[ nX ][ nY ].user             = '';
-                    $scope.game.board[ nX ][ nY ].shipHits         = 0;
-                    $scope.game.board[ nX ][ nY ].shipName         = '';
-                    $scope.game.board[ nX ][ nY ].shipPos          = 0;
-                    $scope.game.board[ nX ][ nY ].shipOrientation  = true;
-                    $scope.game.board[ nX ][ nY ].shipZero         = [-1, -1];
+                    $scope.game.board[ nX ][ nY ] = $scope.getNewRegister();
+                    
+                    $scope.updateLeaderBoard( $scope.user.uid, shipUser, shipName, shipSize );
+
+                    //$scope.game.board[ nX ][ nY ].status           = 0;
+                    //$scope.game.board[ nX ][ nY ].user             = '';
+                    //$scope.game.board[ nX ][ nY ].shipHits         = 0;
+                    //$scope.game.board[ nX ][ nY ].shipName         = '';
+                    //$scope.game.board[ nX ][ nY ].shipPos          = 0;
+                    //$scope.game.board[ nX ][ nY ].shipOrientation  = true;
+                    //$scope.game.board[ nX ][ nY ].shipZero         = [-1, -1];
                 }
             } else {
                 $scope.result = 'hit!';
             }
         }
     };
+    
+
+    $scope.updateLeaderBoard = function ( winner, looser, shipName, shipSize ) {
+        console.log('updating leaderboard. winner %s looser %s ship name %s size %d', winner, looser, shipName, shipSize);
+        var leader = $scope.game.child( 'leader' );
+        leader[ winner ][ 'won'   ][ shipName ] += 1;
+        leader[ looser ][ 'lost'  ][ shipName ] += 1;
+        leader[ winner ][ 'score' ]             += shipSize;
+        leader[ looser ][ 'score' ]             -= shipSize;
+    };
+
+
+    $scope.start = function() {
+        console.log( 'game loaded. game %o setup %o ships %o', $scope.game, $scope.game.setup, $scope.game.setup.shipsOpts );
+        $scope.game.setup.$on('loaded', function(data) {
+            var s   = $scope.game.setup;
+            var so  = s.$child('shipsOpts');
+            var soc = so.$child('0');
+            soc.name = 'bboat';
+            console.log(s   );
+            console.log(so  );
+            console.log(soc );
+            $scope.game.setup.$save();
+        });
+        
+        $scope.game.setup.$child('shipsOpts').$on('loaded', function() {
+            console.log('loaded ships');
+            console.log(chd);
+            chd.$bind($scope, 'shipsOpts').then( function(){
+                console.log('bounded ships');
+                console.log($scope.shipsOpts);
+            });
+        });
+        
+        //$scope.game.setup.$bind($scope, 'setup').then( function(unbind) { console.log('bount. setup %o ships %o', $scope.setup, $scope.setup.shipsOpts) } );
+        //$scope.game.setup.$bind($scope, 'setup').then( function(unbind) { console.log('bount. setup %o ships %o', $scope.setup, $scope.setup.shipsOpts) } );
+    };
+
+    $scope.orientation = true;
+
+    $scope.game.$connect( $scope, $scope.start );
 };
 
 
@@ -309,17 +357,9 @@ function gameController ( $scope, angularFire, $state ) {
 
 
 
-function setupController ( $scope, angularFire, $state ) {
+function setupController ( $scope, $state, gameDB ) {
     console.log( 'setupController' );
-
-    angularFire( FDbase, $scope, 'game' ).then( function(){
-        console.log('FDgame %o', $scope.game);
-
-        $scope.currWidth  = $scope.game.setup.width;
-        $scope.currHeight = $scope.game.setup.height;
-        $scope.currShips  = $scope.game.setup.shipsOpts;
-    });
-
+    $scope.game  = gameDB;    
     
     $scope.apply = function() {
         console.log('apply start');
@@ -330,6 +370,8 @@ function setupController ( $scope, angularFire, $state ) {
         $scope.game.setup.width     = $scope.currWidth;
         $scope.game.setup.height    = $scope.currHeight;
         $scope.game.setup.shipsOpts = $scope.currShips;
+        
+        $scope.game.leader          = {};
         
         if ( prevHeight != $scope.currHeight || prevWidth != $scope.currWidth || prevShips != $scope.currShips) {
             $scope.reset();
@@ -357,7 +399,8 @@ function setupController ( $scope, angularFire, $state ) {
             
             for ( var y = 0; y < $scope.game.setup.width; y++ ) {
                 var coord = 'board/' + x + '/' + y;
-                FDbase.child( coord ).set( "" );
+                //FDbase.child( coord ).set( "" );
+                $scope.game.board.$child(coord) = "";
             }
         }
     }
@@ -369,17 +412,10 @@ function setupController ( $scope, angularFire, $state ) {
         for ( var x = 0; x < $scope.game.setup.height; x++ ) {
             
             for ( var y = 0; y < $scope.game.setup.width; y++ ) {
-                var vars = {
-                                'status'         :          0,
-                                'user'           :         -1,
-                                'shipHits'       :          0,
-                                'shipName'       :         '',
-                                'shipPos'        :          0,
-                                'shipOrientation':       true,
-                                'shipZero'       :   [-1, -1],
-                            };
+                var vars  = $scope.getNewRegister();
                 var coord = 'board/' + x + '/' + y;
-                FDbase.child( coord ).set( vars );
+                //FDbase.child( coord ).set( vars );
+                $scope.game.board.$child(coord) = vars;
             }
         }
         
@@ -414,6 +450,36 @@ function setupController ( $scope, angularFire, $state ) {
             { name: 'carrier'  , size: 7, imgStart: 15 }
         ];
     };
+
+
+    $scope.getNewRegister  = function ( ) {
+        return {
+            'status'         :          0,
+            'user'           :         -1,
+            'shipHits'       :          0,
+            'shipName'       :         '',
+            'shipPos'        :          0,
+            'shipOrientation':       true,
+            'shipZero'       :   [-1, -1],
+        };
+    
+        //$scope.game.board[ nX ][ nY ].status           = 0;
+        //$scope.game.board[ nX ][ nY ].user             = '';
+        //$scope.game.board[ nX ][ nY ].shipHits         = 0;
+        //$scope.game.board[ nX ][ nY ].shipName         = '';
+        //$scope.game.board[ nX ][ nY ].shipPos          = 0;
+        //$scope.game.board[ nX ][ nY ].shipOrientation  = true;
+        //$scope.game.board[ nX ][ nY ].shipZero         = [-1, -1];
+    };
+
+    
+    $scope.updateRegister = function ( obj, vars ) {
+        for ( var key  in vars ) {
+            var val = vars[ key ];
+            obj[ key ] = val;
+        };
+    };
+
     
     console.log( 'finished' );
 }
@@ -423,119 +489,165 @@ function setupController ( $scope, angularFire, $state ) {
 
 
 
-
-
-
 var demoApp = angular.module( "myModule", ['firebase', 'ui.router'] ); //, 'ngRoute'
+
 
 demoApp.config(['$stateProvider', function ($stateProvider) {
     var home = {
         name       : 'home',
         url        : '/',
         controller : bodyController,
-        templateUrl: 'home.html'
+        templateUrl: 'partials/home.html'
     };
+    $stateProvider.state( home   );
     
     var init = {
         name       : 'init',
         url        : '/init',
         parent     : home,
         controller : initController,
-        templateUrl: 'init.html'
+        templateUrl: 'partials/init.html'
     };
+    $stateProvider.state( init   );
         
     var game = {
         name       : 'game',
         url        : '/game',
         parent     : home,
         controller : gameController,
-        templateUrl: 'game.html'
+        templateUrl: 'partials/game.html'
     };
-
+    $stateProvider.state( game   );
+    
     var setup = {
         name       : 'setup',
         url        : '/setup',
         parent     : home,
         controller : setupController,
-        templateUrl: 'setup.html'
+        templateUrl: 'partials/setup.html'
     };
-
-    $stateProvider.state( home   );
-    $stateProvider.state( init   );
-    $stateProvider.state( game   );
     $stateProvider.state( setup  );
 }])
 
-.run(['$state', function ($state) {
-    $state.transitionTo( 'home' ); 
-}]);
 
-
-demoApp.filter('range', function() {
+.filter('range', function() {
   return function(input, total) {
     total = parseInt(total);
     for (var i=0; i<total; i++)
       input.push(i);
     return input;
   };
-});
+})
 
 
-    //.controller( controllers );
 
+.factory('gameDB', function($rootScope, $firebase) {
+    console.log("FACTORY GAME");
     
-//demoApp.config(
-//                function ($routeProvider) {
-//                    $routeProvider
-//                        .when('/init', {
-//                            templateUrl: 'init.html',
-//                            controller: 'initController',
-//                            view: 'body'
-//                        })
-//                        .when('/game', {
-//                            templateUrl: 'game.html',
-//                            controller: 'gameController',
-//                            view: 'body'
-//                        })
-//                        .otherwise({
-//                            redirectTo: '/init',
-//                            view: 'body'
-//                        })
-//                }
-//);
+    var game        = function( keys ) {
+        var self   = this;
+        self.$keys = keys;
+    };
 
 
-//state-0 { /* sea */
-//state-1 { /* used */
-//state-2 { /* hit */
-//state-3 { /* sunk */
-//
-//
-//
-//td.ship-0{ /* transparent */
-//
-//td.ship-1{ /* boat */
-//
-//td.ship-2{ /* fragate */
-//td.ship-3{ /* fragate */
-//td.ship-4{ /* fragate */
-//td.ship-5{ /* fragate */
-//
-//td.ship-6{ /* submarine */
-//td.ship-7{ /* submarine */
-//td.ship-8{ /* submarine */
-//td.ship-9{ /* submarine */
-//
-//td.ship-10{ /* destroyer */
-//td.ship-11{ /* destroyer */
-//td.ship-12{ /* destroyer */
-//td.ship-13{ /* destroyer */
-//td.ship-14{ /* destroyer */
-//
-//td.ship-15{ /* carrier */
-//td.ship-16{ /* carrier */
-//td.ship-17{ /* carrier */
-//td.ship-18{ /* carrier */
-//td.ship-19{ /* carrier */
-//td.ship-20{ /* carrier */
-//td.ship-21{ /* carrier */
+    game.prototype.$loadedNum = 0;
+    game.prototype.$boundNum  = 0;
+
+    game.prototype.$loaded    = function () { this.$loadedNum += 1; if ( this.$loadedNum == this.$keys.length ) { this.$bind();    }; };
+    game.prototype.$bound     = function () { this.$boundNum  += 1; if ( this.$boundNum  == this.$keys.length ) { this.$callback(); }; };
+
+
+    game.prototype.$connect = function ( $scope, callback, bind ) {
+        var self       = this;
+        self.$scope    = $scope;
+        self.$callback = callback;
+        self.$doBind   = bind ? true : false;
+        
+        for ( var k = 0; k < self.$keys.length; k++ ) {
+            var key = self.$keys[k];
+            console.log('adding key %s', key);
+
+            var fb = $firebase( FDbase.child( key ) );
+
+            fb.$on( 'loaded', self.$load(key, fb) );
+        }
+    };
+    
+    game.prototype.$bind      = function ( ) {
+        var self = this;
+        
+        function unb ($scope, key) {
+            return function( unbind ) {
+                console.log('key %s bound %o', key, $scope[key]);
+                //$scope[ key ].$unbind = unbind;
+                self.$bound();
+            };
+        }
+        
+        for ( var k = 0; k < self.$keys.length; k++ ) {
+            var key = self.$keys[k];
+            console.log('binding key %s %o', key, self[ key ]);
+            if ( self.$doBind ) {
+                self[ key ].$bind( self.$scope, key ).then( unb(self.$scope, key) );
+            } else {
+                self.$bound();
+            }
+        }
+    };
+    
+    
+    game.prototype.$load = function(key, fb) {
+        var self = this;
+        
+        return function( unbind ) {
+            console.log('key %s loaded. fb %o', key, fb);
+            
+            fb.$unbind  = unbind;
+            
+            self[ key ] = fb;
+            
+            self.$loaded();
+        };
+    };
+
+
+    var db = new game( ['board', 'setup'] );
+    
+    return db;
+    
+
+    //setup: $firebase( FDbase.child('setup') ).$bind( $scope, 'setup' )
+    
+    //$scope.data.board.$bind($scope.game, 'board')
+    //$scope.data.setup.$bind($scope.game, 'setup')
+    
+    //$scope.data.$on("loaded", function ( ) {
+        //console.log('data       %o', $scope.data );
+        //console.log('data.setup %o', $scope.data.setup );
+        //$scope.data.$bind($scope, 'game').then(function(unbind) {
+            //$scope.game.unbind = unbind;
+            //console.log('game       %o', $scope.game );
+            //console.log('game.setup %o', $scope.game.setup );
+            //console.log('game.setup %o', $scope.game.setup );
+        //});
+    //});
+    
+    //angularFire( FDbase.child('board'), $scope, 'game.board' );
+    //angularFire( FDbase.child('setup'), $scope, 'game.setup' );
+    //$scope.game.$on("loaded", function ( ) {
+    //    $scope.currWidth  = $scope.game.setup.width;
+    //    $scope.currHeight = $scope.game.setup.height;
+    //    $scope.currShips  = $scope.game.setup.shipsOpts;
+    //});
+    //console.log( $scope.data.board );
+    //console.log( $scope.data.setup );
+
+
+    //console.log( $firebase );
+})
+
+
+.run(['$state', function ($state) {
+    $state.transitionTo( 'home' ); 
+}]);
+

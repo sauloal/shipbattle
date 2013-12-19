@@ -1,16 +1,20 @@
                 <h1 data-ng-hide="game.board && game.setup" >Loading</h1>
+                <!--{{ game       }}-->
+                <!--{{ game.setup }}-->
+                <!--{{ game.board }}-->
+                <!--{{ game.setup.shipsOpts }}-->
     
                 <div data-ng-show="game.board && game.setup" >
                     <h3> Hi {{ user.displayName || "anonymous " + user.id }} </h3>
                     Add <input type="checkbox" data-ng-model="adding"/>
                     
-                    <select data-ng-show="adding" data-ng-model='ships' ng-options='s.name for s in game.setup.shipsOpts'></select>
+                    <select data-ng-show="adding" data-ng-model='ships' ng-options='s.name for s in shipsOpts'></select>
                     
                     <span data-ng-show="adding" data-ng-model="orientation" data-ng-click=" orientation = !orientation "> {{ orientation ? 'Horizontal' : 'Vertical' }} </span>
                     
                     <table>
                         <tr data-ng-repeat="row in game.board">
-                            <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( {{ $parent.$index }}, {{ $index }}, col )"></td>
+                            <td data-ng-repeat="col in row" class="{{ getClasses( col ) }}" data-ng-click="updateCell( $parent.$index, $index, col )"></td>
                         </tr>
                     </table>
                     
